@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "BreezeRead",
+  "version": "0.1.0",
+  "description": "A cleaner reading experience for Naver News.",
+  "icons": { "128": "assets/icon128.png" },
+
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://news.naver.com/*",
+    "https://n.news.naver.com/*"
+  ],
+
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["https://news.naver.com/*", "https://n.news.naver.com/*"],
+      "js": ["src/content.js"],
+      "css": ["src/content.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
