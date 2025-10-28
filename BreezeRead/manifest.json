@@ -3,7 +3,7 @@
   "name": "BreezeRead",
   "version": "0.1.0",
   "description": "A cleaner reading experience for Naver News.",
-  "icons": { "128": "assets/icon128.png" },
+  "icons": { "128": "assets/icon128.jpg" },
 
   "permissions": ["storage"],
   "host_permissions": [
