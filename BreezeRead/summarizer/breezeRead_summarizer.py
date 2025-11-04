@@ -10,7 +10,34 @@ TextRank 기반 뉴스 핵심 요약
 - MMR로 중요도/비중복성 균형을 맞춰 k개 문장 선택
 - (옵션) 선택 문장을 단락으로 압축하는 생성 요약(Transformers pipeline)
 
-본 파일은 CLI로도 실행 가능하며, JSON 출력 옵션과 추상 요약 옵션을 제공합니다.
+본 파일은 CLI로도 실행 가능하며, JSON 출력 옵션과 추상 요약 옵션을 제공함.
+"""
+
+"""How to use
+
+# 가상환경 생성 및 활성화
+    cd /Users/geonwoo/KHU_Dev/DataCapstone
+    python3 -m venv .venv
+    source .venv/bin/activate    # Windows: .venv\Scripts\activate
+    python -m pip install -U pip setuptools wheel
+
+# 의존성 설치
+    python -m pip install numpy scikit-learn networkx kss transformers
+    
+# CLI 실행 예시
+
+    # 텍스트 입력, 3문장 요약, JSON 출력, 압축 요약 포함
+    python BreezeRead/summarizer/breezeRead_summarizer.py \
+        --text "some text..." \
+        --top-k 3 \
+        --json \
+        --abstract
+        
+    # 파일 입력, 5문장 요약, JSON 출력
+    python BreezeRead/summarizer/breezeRead_summarizer.py \
+        --file /path/to/input.txt \
+        --top-k 5
+        --json
 """
 
 from __future__ import annotations
@@ -539,7 +566,7 @@ def estimate_read_time_min(text: str, chars_per_min: int = 350) -> int:
 
 
 def main():
-    """CLI 엔트리: 파일/문자열/STDIN 입력을 받아 요약 결과를 출력한다."""
+    """CLI Entry: 파일/문자열/STDIN 입력을 받아 요약 결과를 출력한다."""
     ap = argparse.ArgumentParser(description="TextRank_Summarizer")
     ap.add_argument("-f", "--file", type=str, help="입력 텍스트 파일 경로(선택)")
     ap.add_argument("--text", type=str, default=None, help="파일 대신 직접 본문 문자열을 전달")
