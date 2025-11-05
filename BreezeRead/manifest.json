@@ -4,19 +4,26 @@
   "version": "1.1",
   "description": "웹페이지 왼쪽에 사이드바를 띄우는 확장",
   "icons": { "128": "assets/icon128.jpg" },
-  "permissions": ["scripting"],
-  "host_permissions": ["<all_urls>"],
+  "permissions": [
+    "scripting",
+     "storage"
+    ],
+  "host_permissions": [
+    "https://news.naver.com/*",
+    "https://n.news.naver.com/*"
+  ],
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"],
+      "matches": ["https://news.naver.com/*", "https://n.news.naver.com/*"],
+      "js": ["./src/content.js"],
+      "css":["./src/style.css"],
       "run_at": "document_idle"
     }
   ],
   "web_accessible_resources": [
     {
       "resources": ["capdi.html", "style.css"],
-      "matches": ["<all_urls>"]
+      "matches": ["https://news.naver.com/*", "https://n.news.naver.com/*"]
     }
   ]
 }
