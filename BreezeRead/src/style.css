@@ -1,0 +1,218 @@
+/* style.css */
+
+/* 1. 최상위 컨테이너: 사이드바와 토글 버튼을 포함하며 화면에 고정 */
+#breezeread-container {
+    position: fixed;
+    top: 0;
+    left: 0; /* 왼쪽에 고정 */
+    height: 100vh;
+    width: 190px;
+    z-index: 9999;
+    transition: transform 0.3s ease; /* 애니메이션 효과 */
+}
+
+/* 2. 사이드바 본체 */
+#breezeread-sidebar {
+    width: 190px; /* 원하는 사이드바 너비 */
+    height: 100%;
+    background-color: #f7f7f7;
+    border-right: 1px solid #ddd;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    box-sizing: border-box;
+}
+
+/* 3. 토글 버튼: 사이드바 옆(외부)에 위치하며 같이 움직임 */
+#breezeread-toggle {
+    position: absolute;
+    top: 100px; /* 사이드바 상단에서 100px 아래에 위치 */
+    right: -30px; /* 사이드바 경계선에 붙도록 외부로 조정 */
+    width: 30px;
+    height: 30px;
+    background-color: #f7f7f7;
+    border: 1px solid #ddd;
+    border-left: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    font-size: 16px;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    z-index: 10000;
+}
+
+/* 4. 'collapsed' 상태일 때 컨테이너를 왼쪽으로 이동하여 숨김 */
+#breezeread-container.collapsed {
+    transform: translateX(-190px); /* 사이드바 너비만큼 이동 */
+}
+
+#breezeread-sidebar {
+    /* ... (너비/높이/배경색 유지) ... */
+    background-color: #fcfcfc; /* 약간 밝은 배경 */
+    font-family: 'Arial', 'Malgun Gothic', sans-serif;
+    padding: 0; /* 내부 패딩을 제거하고 섹션별로 패딩을 줍니다 */
+    overflow-y: auto; /* 내용이 길어지면 스크롤 가능 */
+}
+
+/* 상단 헤더 (이름 및 설정 버튼) */
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background-color: #f0f0f0; /* 헤더 배경 */
+    border-bottom: 1px solid #ddd;
+    position: sticky; /* 스크롤 되어도 상단 고정 */
+    top: 0;
+    z-index: 10;
+}
+.header-logo {
+    display: flex;
+    align-items: center;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #4a4a4a;
+}
+.header-logo img {
+    width: 24px;
+    height: 24px;
+    margin-right: 5px;
+}
+#settingsBtn {
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    color: #555;
+    padding: 0;
+}
+
+/* 주요 콘텐츠 영역 */
+.sidebar-content-area {
+    padding: 15px;
+}
+
+/* 공통 섹션 스타일 */
+.section-panel {
+    margin-bottom: 20px;
+}
+
+.section-title {
+    font-size: 0.9em;
+    font-weight: bold;
+    color: #888;
+    margin-bottom: 10px;
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background: #eee;
+    margin: 20px 0;
+}
+
+/* 1. 소요 시간 */
+.time-value {
+    font-size: 1.1em;
+    font-weight: bold;
+}
+.difficulty-level {
+    color: #f4b400; /* 예시 색상 */
+}
+
+/* 2. 핵심 요약 */
+#summaryArea ol {
+    padding-left: 20px;
+    margin: 5px 0;
+}
+#summaryArea li {
+    margin-bottom: 8px;
+    line-height: 1.4;
+    font-size: 0.95em;
+}
+
+/* 3. 핵심 키워드 */
+.keyword-tag {
+    display: inline-block;
+    background-color: #e6f7ff;
+    color: #1890ff;
+    border-radius: 12px;
+    padding: 4px 10px;
+    margin-right: 5px;
+    font-size: 0.8em;
+    font-weight: 500;
+}
+
+/* 4. 관련 뉴스 추천 */
+.news-list {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto; /* 가로 스크롤 가능 */
+    padding-bottom: 5px;
+}
+.news-item {
+    flex-shrink: 0;
+    width: 100px;
+    text-align: center;
+}
+.news-item img {
+    width: 100%;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 5px;
+}
+.news-item p {
+    font-size: 0.75em;
+    line-height: 1.3;
+    margin: 0;
+    /* 2줄로 제한 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+/* 5. 북마크 섹션 */
+.bookmark-manager-info {
+    font-size: 0.8em;
+    color: #999;
+    margin-bottom: 10px;
+}
+.bookmark-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.bookmark-folder {
+    font-size: 0.95em;
+    padding: 5px 0;
+    cursor: pointer;
+}
+.bookmark-action-bar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 15px;
+}
+.bookmark-action-bar button {
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    font-size: 1em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.send-icon {
+    background-color: #1890ff;
+    color: white;
+    border: none;
+}
