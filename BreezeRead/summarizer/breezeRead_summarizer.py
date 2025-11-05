@@ -1,45 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""
-TextRank 기반 뉴스 핵심 요약
-
-- 전처리(clean_text) → 문장 분리(kss) → TF-IDF(문자 n-gram) 임베딩
-- 코사인 유사도 행렬 → kNN 그래프 → PageRank 중심성
-- 위치(리드)·문서 중심성·BM25(제목+리드 관련도) 신호 결합
-- MMR로 중요도/비중복성 균형을 맞춰 k개 문장 선택
-- (옵션) 선택 문장을 단락으로 압축하는 생성 요약(Transformers pipeline)
-
-본 파일은 CLI로도 실행 가능하며, JSON 출력 옵션과 추상 요약 옵션을 제공함.
-"""
-
-"""How to use
-
-# 가상환경 생성 및 활성화
-    cd /Users/geonwoo/KHU_Dev/DataCapstone
-    python3 -m venv .venv
-    source .venv/bin/activate    # Windows: .venv\Scripts\activate
-    python -m pip install -U pip setuptools wheel
-
-# 의존성 설치
-    python -m pip install numpy scikit-learn networkx kss transformers
-    
-# CLI 실행 예시
-
-    # 텍스트 입력, 3문장 요약, JSON 출력, 압축 요약 포함
-    python BreezeRead/summarizer/breezeRead_summarizer.py \
-        --text "some text..." \
-        --top-k 3 \
-        --json \
-        --abstract
-        
-    # 파일 입력, 5문장 요약, JSON 출력
-    python BreezeRead/summarizer/breezeRead_summarizer.py \
-        --file /path/to/input.txt \
-        --top-k 5
-        --json
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -54,8 +15,47 @@ from typing import List, Tuple, Optional, Dict
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 import networkx as nx
-from transformers import pipeline as hf_pipeline
 import kss
+
+"""
+TextRank 기반 뉴스 핵심 요약
+
+- 전처리(clean_text) → 문장 분리(kss) → TF-IDF(문자 n-gram) 임베딩
+- 코사인 유사도 행렬 → kNN 그래프 → PageRank 중심성
+- 위치(리드)·문서 중심성·BM25(제목+리드 관련도) 신호 결합
+- MMR로 중요도/비중복성 균형을 맞춰 k개 문장 선택
+- (옵션) 선택 문장을 단락으로 압축하는 생성 요약(Transformers pipeline)
+
+본 파일은 CLI로도 실행 가능하며, JSON 출력 옵션과 추상 요약 옵션을 제공함.
+"""
+
+"""
+[How to use]
+
+# 가상환경 생성 및 활성화
+    cd /Users/geonwoo/KHU_Dev/DataCapstone
+    python3 -m venv .venv
+    source .venv/bin/activate    # Windows: .venv\\Scripts\\activate
+    python -m pip install -U pip setuptools wheel
+
+# 의존성 설치
+    python -m pip install numpy scikit-learn networkx kss transformers
+    
+# CLI 실행 예시
+
+    # 텍스트 입력, 3문장 요약, JSON 출력, 압축 요약 포함
+    python BreezeRead/summarizer/breezeRead_summarizer.py \\
+        --text "some text..." \\
+        --top-k 3 \\
+        --json \\
+        --abstract
+        
+    # 파일 입력, 5문장 요약, JSON 출력
+    python BreezeRead/summarizer/breezeRead_summarizer.py \\
+        --file /path/to/input.txt \\
+        --top-k 5\\
+        --json
+"""
 
 # 제거 대상 패턴(캡션/저작권/광고 문구 등)
 CAPTION_PATTERNS = [
@@ -525,26 +525,31 @@ class EnhancedTextRankSummarizer:
 
         return result
 
-    def _abstractive_compress(self, sents: List[str]) -> str:
-        """선택 문장들을 한 단락으로 압축하는 생성 요약(Transformers pipeline 사용).
+def _abstractive_compress(self, sents: List[str]) -> str:
+    """선택 문장들을 한 단락으로 압축하는 생성 요약.
 
-        환경변수 ETS_ABSTRACT_MODEL로 모델을 지정할 수 있고,
-        미지정 시 distilbart 계열을 기본값으로 사용한다.
+    - transformers 백엔드가 없으면 조용히 빈 문자열 반환(폴백).
+    - 환경변수 ETS_ABSTRACT_MODEL로 모델 지정 가능.
+    """
+    # transformers가 없다면 바로 폴백
+    try:
+        os.environ.setdefault("TRANSFORMERS_NO_TF_WARNING", "1")
+        from transformers import pipeline as hf_pipeline
+    except Exception:
+        return ""
 
-        Args:
-            sents: 선택된 문장 리스트
-
-        Returns:
-            압축 요약 단락(문자열). 실패 시 빈 문자열.
-        """
-        text = " ".join(sents)
-        model_name = os.environ.get("ETS_ABSTRACT_MODEL", "sshleifer/distilbart-cnn-12-6")
+    # 요약 실행
+    text = " ".join(sents)
+    model_name = os.environ.get("ETS_ABSTRACT_MODEL", "sshleifer/distilbart-cnn-12-6")
+    try:
         summarizer = hf_pipeline("summarization", model=model_name)
         out = summarizer(text, max_length=128, min_length=48, do_sample=False, truncation=True)
         if isinstance(out, list) and out:
             return out[0].get("summary_text", "").strip()
+    except Exception:
+        # 백엔드(PyTorch/TF/Flax) 미설치 등으로 실패하면 폴백
         return ""
-
+    return ""
 
 # -------------------------
 # CLI 유틸
