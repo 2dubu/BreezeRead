@@ -3,6 +3,7 @@
   "name": "BreezeRead Sidebar",
   "version": "1.1",
   "description": "웹페이지 왼쪽에 사이드바를 띄우는 확장",
+  "icons": { "128": "assets/icon128.jpg" },
   "permissions": ["scripting"],
   "host_permissions": ["<all_urls>"],
   "content_scripts": [
