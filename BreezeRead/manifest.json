@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
   "name": "BreezeRead Sidebar",
-  "version": "1.0",
+  "version": "1.1",
   "description": "네이버 뉴스 요약 확장 프로그램입니다.",
-  "icons": {
-     "128": "assets/icon128.png"
+  "icons": { 
+    "128": "assets/icon128.jpg" 
   },
   "permissions": [
     "scripting",
@@ -17,14 +17,14 @@
   "content_scripts": [
     {
       "matches": ["https://news.naver.com/*", "https://n.news.naver.com/*"],
-      "js": ["./src/content.js"],
-      "css":["./src/style.css"],
+      "js": ["src/content.js"],
+      "css":["src/style.css"],
       "run_at": "document_idle"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["capdi.html", "style.css"],
+      "resources": ["src/main.html", "src/style.css"],
       "matches": ["https://news.naver.com/*", "https://n.news.naver.com/*"]
     }
   ]
