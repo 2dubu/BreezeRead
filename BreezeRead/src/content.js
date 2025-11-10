@@ -9,8 +9,8 @@
 
   // HTML 및 CSS 가져오기
   const [htmlRes, cssRes] = await Promise.all([
-    fetch(chrome.runtime.getURL("main.html")),
-    fetch(chrome.runtime.getURL("style.css"))
+    fetch(chrome.runtime.getURL("src/main.html")),
+    fetch(chrome.runtime.getURL("src/style.css"))
   ]);
   const html = await htmlRes.text();
   const cssText = await cssRes.text();
