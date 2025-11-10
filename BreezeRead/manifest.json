@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "BreezeRead Sidebar",
-  "version": "1.1",
+  "version": "1.0",
   "description": "네이버 뉴스 요약 확장 프로그램입니다.",
   "icons": { 
     "128": "assets/icon128.jpg" 
