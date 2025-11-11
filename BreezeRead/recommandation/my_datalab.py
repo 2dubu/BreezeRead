@@ -67,8 +67,10 @@ def getresult(startDate, endDate, timeUnit, keywordGroups, device, gender, ages)
 
 
 
-client_id = "FyJxqTGwpysCzf7Nk5oZ"
-client_secret = "SmS2sRweQP"
+client_id = os.environ.get("NAVER_CLIENT_ID")
+client_secret = os.environ.get("NAVER_CLIENT_SECRET")
+if not client_id or not client_secret:
+    raise EnvironmentError("NAVER_CLIENT_ID and NAVER_CLIENT_SECRET environment variables must be set.")
 
 startDate='2022-01-01'
 endDate='2022-09-30'
