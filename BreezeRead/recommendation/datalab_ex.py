@@ -3,6 +3,8 @@ import urllib.request
 import json
 import pandas as pd
 import matplotlib.pyplot as plt
+from dotenv import load_dotenv
+load_dotenv()
 
 # 한글 폰트 설정 (그래프 깨짐 방지)
 plt.rc('font', family='Hiragino Sans GB W3')
@@ -66,12 +68,6 @@ def getresult(startDate, endDate, timeUnit, keywordGroups, device, gender, ages)
 
 
 
-
-client_id = os.environ.get("NAVER_CLIENT_ID")
-client_secret = os.environ.get("NAVER_CLIENT_SECRET")
-
-if not client_id or not client_secret:
-    raise ValueError("NAVER_CLIENT_ID and NAVER_CLIENT_SECRET environment variables must be set.")
 startDate='2022-01-01'
 endDate='2022-09-30'
 timeUnit='month'  #'day','week','month'

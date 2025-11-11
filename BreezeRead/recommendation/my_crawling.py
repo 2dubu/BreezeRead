@@ -1,6 +1,8 @@
 from http.client import HTTPSConnection
 from urllib.parse import quote
 from xml.etree.ElementTree import fromstring
+from dotenv import load_dotenv
+load_dotenv()
 
 class StringCleaner:
     @staticmethod
@@ -16,7 +18,7 @@ class StringCleaner:
 q="산불" 
 q=quote(q)
 # req header
-h={"X-Naver-Client-Id" : "FN5LcznRqbcO34foOQjK","X-Naver-Client-Secret":"NExju9i_rd"}
+h={"X-Naver-Client-Id" : X-Naver-Client-Id,"X-Naver-Client-Secret":X-Naver-Client-Secret}
 hc=HTTPSConnection("openapi.naver.com")
 # 요청 방식이 GET이라는 조건 
 hc.request("GET","/v1/search/news.xml?query="+q,headers=h)

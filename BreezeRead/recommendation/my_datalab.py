@@ -3,6 +3,8 @@ import urllib.request
 import json
 import pandas as pd
 import matplotlib.pyplot as plt
+from dotenv import load_dotenv
+load_dotenv()
 
 # 한글 폰트 설정 (그래프 깨짐 방지)
 plt.rc('font', family='Hiragino Sans GB W3')
