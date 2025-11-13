@@ -3,8 +3,17 @@
   "name": "BreezeRead Sidebar",
   "version": "1.0",
   "description": "네이버 뉴스 요약 확장 프로그램입니다.",
-  "icons": { 
+  "icons": {
+    "16":  "assets/icon16.png",
+    "48":  "assets/icon48.png",
     "128": "assets/icon128.png" 
+  },
+  "action": {
+  "default_icon": {
+    "16":  "assets/icon16.png",
+    "48":  "assets/icon48.png",
+    "128": "assets/icon128.png"
+   }
   },
   "permissions": [
     "scripting",
