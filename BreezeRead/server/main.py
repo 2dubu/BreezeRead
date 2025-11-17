@@ -1,13 +1,14 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-# summarize.py, read_time.py로부터 함수 import
+# summarize.py, read_time.py, crawler.py로부터 함수 import
 from summarize import (
     EnhancedTextRankConfig,
     EnhancedTextRankSummarizer,
 )
 from read_time import estimate_read_time_min
+from crawler import crawl_article, CrawlError
 
 app = FastAPI(title="BreezeRead Summarizer API")
 
@@ -25,30 +26,47 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class SummarizeRequest(BaseModel):
-    title: str | None = None
-    content: str
-    top_k: int = 3
-    abstract: bool = False
+# URL request 모델
+class UrlRequest(BaseModel):
+    url: str
 
-@app.post("/summarize")
-def summarize(req: SummarizeRequest):
-    # 요약기 설정
+class UrlSummarizeRequest(UrlRequest):
+    top_k: int = 3
+
+# 1) read_time
+@app.post("/readtime/url")
+def read_time_from_url(req: UrlRequest):
+    try:
+        content = crawl_article(req.url)
+    except CrawlError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=500, detail="크롤링 중 오류가 발생했습니다.")
+
+    read_time_result = estimate_read_time_min(content)
+    return {"read_time_min": read_time_result}
+
+# 2) summarize
+@app.post("/summarize/url")
+def summarize_from_url(req: UrlSummarizeRequest):
+    # 1) 기사 본문 크롤링
+    try:
+        content = crawl_article(req.url)
+    except CrawlError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=500, detail="크롤링 중 오류가 발생했습니다.")
+
+    # 2) summarize 설정
     cfg = EnhancedTextRankConfig(
         top_k=req.top_k,
-        title=req.title,
-        abstract=req.abstract,
     )
     summarizer = EnhancedTextRankSummarizer(cfg)
 
-    # summarize
-    summarize_result = summarizer.summarize(req.content)
-
-    # read_time
-    read_time_result = estimate_read_time_min(req.content)
+    # 3) summarize
+    summarize_result = summarizer.summarize(content)
 
     return {
-        "read_time_min": read_time_result,
         "sentences": summarize_result.get("sentences", []),
         "indices": summarize_result.get("indices", []),
         "scores": summarize_result.get("scores", []),
