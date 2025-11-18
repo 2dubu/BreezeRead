@@ -24,9 +24,8 @@ TextRank 기반 뉴스 핵심 요약
 - 코사인 유사도 행렬 → kNN 그래프 → PageRank 중심성
 - 위치(리드)·문서 중심성·BM25(제목+리드 관련도) 신호 결합
 - MMR로 중요도/비중복성 균형을 맞춰 k개 문장 선택
-- (옵션) 선택 문장을 단락으로 압축하는 생성 요약(Transformers pipeline)
 
-본 파일은 CLI로도 실행 가능하며, JSON 출력 옵션과 추상 요약 옵션을 제공함.
+본 파일은 CLI로도 실행 가능하며, JSON 출력 옵션을 제공함.
 """
 
 """
@@ -39,19 +38,18 @@ TextRank 기반 뉴스 핵심 요약
     python -m pip install -U pip setuptools wheel
 
 # 의존성 설치
-    python -m pip install numpy scikit-learn networkx kss transformers
+    python -m pip install numpy scikit-learn networkx kss
     
 # CLI 실행 예시
 
-    # 텍스트 입력, 3문장 요약, JSON 출력, 압축 요약 포함
-    python BreezeRead/summarizer/breezeRead_summarizer.py \\
+    # 텍스트 입력, 3문장 요약, JSON 출력
+    python BreezeRead/filename.py \\
         --text "some text..." \\
         --top-k 3 \\
-        --json \\
-        --abstract
+        --json
         
     # 파일 입력, 5문장 요약, JSON 출력
-    python BreezeRead/summarizer/breezeRead_summarizer.py \\
+        python BreezeRead/filename.py \\
         --file /path/to/input.txt \\
         --top-k 5\\
         --json
@@ -78,11 +76,18 @@ def clean_text(text: str) -> str:
         str: 전처리된 텍스트(불필요한 문구/태그/공백이 정리된 문자열)
     """
     t = text
+    # 숨은 공백/분리자 정리
+    t = t.replace("\u200b", " ").replace("\u200c", " ").replace("\u200d", " ")
+    t = t.replace("\u00a0", " ")
+    t = t.replace("\u2028", " ").replace("\u2029", " ")
+    
     for pat in CAPTION_PATTERNS:
         t = re.sub(pat, " ", t)
     t = re.sub(r"<[^>]+>", " ", t)      # HTML 태그 제거
     t = re.sub(r"[ \t]+", " ", t)       # 과도한 공백 축소
     t = re.sub(r"\n{2,}", "\n", t)      # 과도한 개행 축소
+    # 제어문자(\x00~\x1F) 제거(단, \n은 보존)
+    t = re.sub(r"[\x00-\x09\x0B-\x1F]", " ", t)
     return t.strip()
 
 
@@ -429,13 +434,12 @@ class EnhancedTextRankConfig:
     edge_top_k: int = 8              # kNN 그래프의 k
     mmr_lambda: float = 0.70
     dedup_threshold: float = 0.85    # (추가 중복 제어 필요 시 사용 가능)
-    lead_bias: float = 0.15
+    lead_bias: float = 0.10
     content_weight: float = 0.35
     bm25_weight: float = 0.30
     pr_damping: float = 0.85
     title: Optional[str] = None
     language: str = "ko"
-    abstract: bool = False           # 선택: 추상 요약(압축 문단) 생성
 
 
 class EnhancedTextRankSummarizer:
@@ -462,7 +466,7 @@ class EnhancedTextRankSummarizer:
         return sents
 
     def summarize(self, text: str) -> Dict:
-        """주요 문장 요약(추출 요약) 및 (옵션) 압축 요약을 수행한다.
+        """주요 문장 요약(추출 요약)을 수행한다.
 
         Args:
             text: 원문 텍스트
@@ -470,9 +474,8 @@ class EnhancedTextRankSummarizer:
         Returns:
             {
               "sentences": [선택된 문장들],
-              "indices": [선택된 문장 인덱스(원문 기준, 오름차순)],
-              "scores": [각 문장의 최종 점수],
-              (optional) "abstract": "선택 문장 기반 압축 요약"
+              "indices": [선택된 문장 인덱스(원문 기준, 오름차순)], 
+              "scores": [각 문장의 최종 점수]
             }
         """
         sents = self._preprocess(text)
@@ -481,8 +484,6 @@ class EnhancedTextRankSummarizer:
         if len(sents) <= self.cfg.top_k:
             indices = list(range(len(sents)))
             res = {"sentences": sents, "indices": indices, "scores": [1.0] * len(sents)}
-            if self.cfg.abstract:
-                res["abstract"] = self._abstractive_compress(sents)
             return res
 
         # 1) TF-IDF 임베딩
@@ -518,38 +519,8 @@ class EnhancedTextRankSummarizer:
             "indices": selected_sorted,
             "scores": summary_scores,
         }
-
-        # 6) (옵션) 선택 문장 기반 압축 요약(추상 요약)
-        if self.cfg.abstract:
-            result["abstract"] = self._abstractive_compress(summary_sents)
-
         return result
 
-def _abstractive_compress(self, sents: List[str]) -> str:
-    """선택 문장들을 한 단락으로 압축하는 생성 요약.
-
-    - transformers 백엔드가 없으면 조용히 빈 문자열 반환(폴백).
-    - 환경변수 ETS_ABSTRACT_MODEL로 모델 지정 가능.
-    """
-    # transformers가 없다면 바로 폴백
-    try:
-        os.environ.setdefault("TRANSFORMERS_NO_TF_WARNING", "1")
-        from transformers import pipeline as hf_pipeline
-    except Exception:
-        return ""
-
-    # 요약 실행
-    text = " ".join(sents)
-    model_name = os.environ.get("ETS_ABSTRACT_MODEL", "sshleifer/distilbart-cnn-12-6")
-    try:
-        summarizer = hf_pipeline("summarization", model=model_name)
-        out = summarizer(text, max_length=128, min_length=48, do_sample=False, truncation=True)
-        if isinstance(out, list) and out:
-            return out[0].get("summary_text", "").strip()
-    except Exception:
-        # 백엔드(PyTorch/TF/Flax) 미설치 등으로 실패하면 폴백
-        return ""
-    return ""
 
 # -------------------------
 # CLI 유틸
@@ -578,7 +549,6 @@ def main():
     ap.add_argument("--top-k", type=int, default=5, help="선택할 요약 문장 수")
     ap.add_argument("--title", type=str, default=None, help="기사 제목(있으면 BM25 관련도 개선)")
     ap.add_argument("--json", action="store_true", help="JSON 형식으로 출력")
-    ap.add_argument("--abstract", action="store_true", help="선택 문장 기반 압축 요약도 함께 출력(transformers 사용)")
     args = ap.parse_args()
 
     # 입력 우선순위: --text > --file > STDIN
@@ -593,7 +563,6 @@ def main():
     cfg = EnhancedTextRankConfig(
         top_k=args.top_k,
         title=args.title,
-        abstract=args.abstract,
     )
     etr = EnhancedTextRankSummarizer(cfg)
     res = etr.summarize(text)
@@ -602,7 +571,6 @@ def main():
         meta = {
             "top_k": args.top_k,
             "title": args.title,
-            "abstract_included": args.abstract,
             "read_time_min": estimate_read_time_min(text),
         }
         out = {"meta": meta, "result": res}
@@ -610,9 +578,6 @@ def main():
     else:
         for s in res.get("sentences", []):
             print(s)
-        if "abstract" in res:
-            print("\n[압축 요약]\n" + res["abstract"])
-
 
 if __name__ == "__main__":
     main()
