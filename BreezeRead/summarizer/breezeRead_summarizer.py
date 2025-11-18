@@ -49,7 +49,7 @@ TextRank 기반 뉴스 핵심 요약
         --json
         
     # 파일 입력, 5문장 요약, JSON 출력
-        python BreezeRead/filename.py \\
+    python BreezeRead/filename.py \\
         --file /path/to/input.txt \\
         --top-k 5\\
         --json
