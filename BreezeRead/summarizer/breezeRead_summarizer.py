@@ -42,16 +42,14 @@ TextRank 기반 뉴스 핵심 요약
     
 # CLI 실행 예시
 
-    # 텍스트 입력, 3문장 요약, JSON 출력
+    # 텍스트 입력, 길이 기반 자동 요약, JSON 출력
     python BreezeRead/filename.py \\
         --text "some text..." \\
-        --top-k 3 \\
         --json
         
-    # 파일 입력, 5문장 요약, JSON 출력
+    # 파일 입력, 길이 기반 자동 요약, JSON 출력
     python BreezeRead/filename.py \\
         --file /path/to/input.txt \\
-        --top-k 5\\
         --json
 """
 
@@ -426,9 +424,8 @@ def mmr_select(
 @dataclass
 class EnhancedTextRankConfig:
     """Summarizer 동작 관련 파라미터 모음"""
-    top_k: int = 5
     max_sentences: int = 400         # 대규모 문서 방어(문장 수 상한)
-    min_char_len: int = 8            # 너무 짧은 문장 제거 기준
+    min_char_len: int = 6            # 너무 짧은 문장 제거 기준
     ngram_range: Tuple[int, int] = (2, 5)
     max_features: Optional[int] = 40000  # TF-IDF 차원 상한(None이면 무제한)
     edge_top_k: int = 8              # kNN 그래프의 k
@@ -449,21 +446,31 @@ class EnhancedTextRankSummarizer:
         """설정(config)을 받아 요약기를 초기화한다."""
         self.cfg = config
 
-    def _preprocess(self, text: str) -> List[str]:
+    def _preprocess(self, text: str) -> Tuple[List[str], int]:
         """전처리 → 문장 분리 → 짧은 문장 제거 → 문장 수 상한 적용까지 수행한다.
 
         Args:
             text: 원문 텍스트
 
         Returns:
-            요약 입력으로 사용할 문장 리스트
+            (요약 입력 문장 리스트, 전처리 후 본문 글자 수)
         """
-        text = clean_text(text)
-        sents = split_sentences(text)  # kss 필수 사용
+        cleaned = clean_text(text)
+        char_len = len(cleaned)
+        sents = split_sentences(cleaned)  # kss 필수 사용
         sents = [s for s in sents if len(s) >= self.cfg.min_char_len]
         if len(sents) > self.cfg.max_sentences:
             sents = sents[: self.cfg.max_sentences]
-        return sents
+        return sents, char_len
+
+    @staticmethod
+    def _determine_top_k(char_len: int) -> int:
+        """clean_text 이후 글자 수를 기반으로 요약 문장 수를 결정한다."""
+        if char_len <= 250:
+            return 1
+        if char_len <= 450:
+            return 2
+        return 3
 
     def summarize(self, text: str) -> Dict:
         """주요 문장 요약(추출 요약)을 수행한다.
@@ -478,10 +485,11 @@ class EnhancedTextRankSummarizer:
               "scores": [각 문장의 최종 점수]
             }
         """
-        sents = self._preprocess(text)
+        sents, char_len = self._preprocess(text)
         if not sents:
             return {"sentences": [], "indices": [], "scores": []}
-        if len(sents) <= self.cfg.top_k:
+        top_k = self._determine_top_k(char_len)
+        if len(sents) <= top_k:
             indices = list(range(len(sents)))
             res = {"sentences": sents, "indices": indices, "scores": [1.0] * len(sents)}
             return res
@@ -507,7 +515,7 @@ class EnhancedTextRankSummarizer:
         )
 
         # 4) MMR로 중복 억제하며 k개 선택
-        selected = mmr_select(self.cfg.top_k, scores, sim_full, lambda_=self.cfg.mmr_lambda)
+        selected = mmr_select(top_k, scores, sim_full, lambda_=self.cfg.mmr_lambda)
 
         # 5) 가독성을 위해 원문 순서로 정렬
         selected_sorted = sorted(selected)
@@ -527,7 +535,6 @@ def main():
     ap = argparse.ArgumentParser(description="TextRank_Summarizer")
     ap.add_argument("-f", "--file", type=str, help="입력 텍스트 파일 경로(선택)")
     ap.add_argument("--text", type=str, default=None, help="파일 대신 직접 본문 문자열을 전달")
-    ap.add_argument("--top-k", type=int, default=5, help="선택할 요약 문장 수")
     ap.add_argument("--title", type=str, default=None, help="기사 제목(있으면 BM25 관련도 개선)")
     ap.add_argument("--json", action="store_true", help="JSON 형식으로 출력")
     args = ap.parse_args()
@@ -542,7 +549,6 @@ def main():
         text = sys.stdin.read()
 
     cfg = EnhancedTextRankConfig(
-        top_k=args.top_k,
         title=args.title,
     )
     etr = EnhancedTextRankSummarizer(cfg)
@@ -550,7 +556,6 @@ def main():
 
     if args.json:
         meta = {
-            "top_k": args.top_k,
             "title": args.title
         }
         out = {"meta": meta, "result": res}
