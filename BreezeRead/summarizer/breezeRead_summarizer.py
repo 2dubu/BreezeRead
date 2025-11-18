@@ -474,7 +474,7 @@ class EnhancedTextRankSummarizer:
         Returns:
             {
               "sentences": [선택된 문장들],
-              "indices": [선택된 문장 인덱스(원문 기준, 오름차순)], 
+              "indices": [선택된 문장 인덱스(원문 기준, 오름차순)],
               "scores": [각 문장의 최종 점수]
             }
         """
