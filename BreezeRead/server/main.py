@@ -58,9 +58,7 @@ def summarize_from_url(req: UrlSummarizeRequest):
         raise HTTPException(status_code=500, detail="크롤링 중 오류가 발생했습니다.")
 
     # 2) summarize 설정
-    cfg = EnhancedTextRankConfig(
-        top_k=req.top_k,
-    )
+    cfg = EnhancedTextRankConfig()
     summarizer = EnhancedTextRankSummarizer(cfg)
 
     # 3) summarize
