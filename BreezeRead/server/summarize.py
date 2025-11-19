@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
+from read_time import estimate_read_time_min
 
 import argparse
 import json
