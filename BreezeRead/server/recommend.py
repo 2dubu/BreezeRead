@@ -205,24 +205,65 @@ class StringCleaner:
         txt=txt.replace("&quot;","")
         return txt
     
-NAVER_CLIENT_ID = os.environ.get("NAVER_CLIENT_ID")
-NAVER_CLIENT_SECRET = os.environ.get("NAVER_CLIENT_SECRET")
-if not client_id or not NAVER_CLIENT_SECRET:
-    raise EnvironmentError("CLIENT_ID and SECRET environment variables must be set.")
-# 위에서 선택한 키워드불러오기 
-q=my_keywordGroups[0]['groupName']
-q=quote(q)
-# req header
-h={"X-Naver-Client-Id" : NAVER_CLIENT_ID,"X-Naver-Client-Secret":NAVER_CLIENT_SECRET}
-hc=HTTPSConnection("openapi.naver.com")
-# 요청 방식이 GET이라는 조건 
-hc.request("GET","/v1/search/news.xml?query="+q,headers=h)
-res=hc.getresponse() 
-resBody=res.read() 
-hc.close()
+# 추출한 기사 섬네일 크롤링해오는 extract_thumbnail
+def extract_thumbnail(url):
+    """기사 페이지에서 #img1 또는 og:image 추출"""
+    try:
+        headers = {"User-Agent": "Mozilla/5.0"}
+        res = requests.get(url, headers=headers, timeout=5)
+        soup = BeautifulSoup(res.text, "html.parser")
 
-for n in fromstring(resBody).iter("item"):
-    print(StringCleaner.clean(n.find("title").text))
-    print(StringCleaner.clean(n.find("link").text))
+        # 1) 네이버 뉴스 대표 이미지
+        img = soup.select_one("#img1")
+        if img and img.get("src"):
+            return img["src"]
 
-    print("------------")
+        # 2) 예비: og:image
+        og = soup.find("meta", property="og:image")
+        if og and og.get("content"):
+            return og["content"]
+
+        return None
+    except:
+        return None
+
+
+def get_top3_news_with_thumbnails(keyword):
+    """네이버 뉴스 검색 상위 3개 뉴스의 제목, 링크, 썸네일 추출"""
+    NAVER_CLIENT_ID = os.environ.get("NAVER_CLIENT_ID")
+    NAVER_CLIENT_SECRET = os.environ.get("NAVER_CLIENT_SECRET")
+    if not NAVER_CLIENT_ID or not NAVER_CLIENT_SECRET:
+        raise EnvironmentError("CLIENT_ID and SECRET environment variables must be set.")
+
+    q = quote(keyword)
+    headers = {"X-Naver-Client-Id": NAVER_CLIENT_ID, "X-Naver-Client-Secret": NAVER_CLIENT_SECRET}
+
+    # API 요청
+    hc = HTTPSConnection("openapi.naver.com")
+    hc.request("GET", f"/v1/search/news.xml?query={q}", headers=headers)
+    res = hc.getresponse()
+    resBody = res.read()
+    hc.close()
+
+    items = list(fromstring(resBody).iter("item"))[:3]  # 상위 3개
+    result = []
+
+    for n in items:
+        title = StringCleaner.clean(n.find("title").text)
+        link = StringCleaner.clean(n.find("link").text)
+        thumbnail = extract_thumbnail(link)  # 썸네일 가져오기
+        result.append({
+            "title": title,
+            "link": link,
+            "thumbnail": thumbnail
+        })
+
+    return result
+
+if __name__ == "__main__":
+    top3_news = get_top3_news_with_thumbnails(my_keywordGroups[0]['groupName'])
+    for news in top3_news:
+        print("제목:", news["title"])
+        print("링크:", news["link"])
+        print("썸네일:", news["thumbnail"])
+        print("------------")
