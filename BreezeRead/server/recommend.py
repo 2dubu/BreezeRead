@@ -10,10 +10,7 @@ import requests
 from bs4 import BeautifulSoup
 from sklearn.feature_extraction.text import TfidfVectorizer
 from konlpy.tag import Okt
-from collections import Counter
 import networkx as nx
-import numpy as np
-
 '''
 recommend.py 기능 핵심요약 
 
@@ -41,16 +38,34 @@ source venv/bin/activate
 python 실행파일.py
 
 '''
+load_dotenv()
 
-# 1. url에서 뉴스 본문 크롤링하기 
-def get_naver_news_content(url):
+# 환경변수 불러오기
+CLIENT_ID = os.environ.get("client_id")
+CLIENT_SECRET = os.environ.get("client_secret")
+NAVER_CLIENT_ID = os.environ.get("NAVER_CLIENT_ID")
+NAVER_CLIENT_SECRET = os.environ.get("NAVER_CLIENT_SECRET")
+
+if not CLIENT_ID or not CLIENT_SECRET or not NAVER_CLIENT_ID or not NAVER_CLIENT_SECRET:
+    raise EnvironmentError("필수 CLIENT_ID/SECRET 환경변수가 설정되어야 합니다.")
+
+# =========================
+# 1️⃣ 뉴스 본문 크롤링
+# =========================
+def get_naver_news_content(url: str) -> str:
+    """주어진 네이버 뉴스 URL에서 본문을 크롤링한다.
+
+    Args:
+        url: 네이버 뉴스 기사 URL
+
+    Returns:
+        본문 텍스트(str), 없으면 오류 메시지
+    """
     response = requests.get(url)
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, 'html.parser')
-        # 네이버 뉴스 본문 영역
-        content = soup.find('div', {'id': 'newsct_article'}) 
+        content = soup.find('div', {'id': 'newsct_article'})
         if content:
-            # 본문에서 스크립트 및 스타일 제거
             for script in content(['script', 'style']):
                 script.decompose()
             return content.get_text(strip=True)
@@ -59,235 +74,170 @@ def get_naver_news_content(url):
     else:
         return "페이지를 불러올 수 없습니다."
 
-# 지금은 네이버 뉴스 URL 입력했지만 나중에는 content.js에서 사용자가 읽고있는 뉴스 url 불러올 계획
-news_url = "https://n.news.naver.com/article/008/0005278558?cds=news_media_pc"  
-news_content = get_naver_news_content(news_url)
-print(news_content)
+# =========================
+# 2️⃣ TF-IDF 키워드 추출
+# =========================
+def extract_keywords_tfidf(text: str, top_n: int = 6):
+    """본문 텍스트에서 TF-IDF 기반 상위 키워드를 추출한다.
 
-# 2. 본문에 있는 글에서 TF-IDF 키워드 추출
-def extract_keywords_tfidf(text, top_n=6):
+    Args:
+        text: 원문 텍스트
+        top_n: 상위 n개 키워드 추출
+
+    Returns:
+        [(키워드, 점수), ...] 형태 리스트
+    """
     okt = Okt()
-    tokens = okt.nouns(text)
-    tokens = [t for t in tokens if len(t) > 1]  # 한 글자는 제외
-
-    # TF-IDF 계산
+    tokens = [t for t in okt.nouns(text) if len(t) > 1]
     tfidf_vectorizer = TfidfVectorizer()
     tfidf_matrix = tfidf_vectorizer.fit_transform([" ".join(tokens)])
     feature_names = tfidf_vectorizer.get_feature_names_out()
     scores = tfidf_matrix.toarray()[0]
-    word_score = dict(zip(feature_names, scores))
-    sorted_words = sorted(word_score.items(), key=lambda x: x[1], reverse=True)
-    # 상위 top_n 단어와 점수 출력
-    return sorted_words[:top_n]
-# 3️. TextRank 키워드 추출
-def extract_keywords_textrank(text, top_n=6, window_size=4, damping=0.85, min_diff=1e-5, steps=100):
+    return sorted(zip(feature_names, scores), key=lambda x: x[1], reverse=True)[:top_n]
+
+# =========================
+# 3️⃣ TextRank 키워드 추출
+# =========================
+def extract_keywords_textrank(text: str, top_n: int = 6, window_size: int = 4, damping: float = 0.85):
+    """본문 텍스트에서 TextRank 기반 상위 키워드를 추출한다.
+
+    Args:
+        text: 원문 텍스트
+        top_n: 상위 n개 키워드 추출
+        window_size: 단어 그래프 연결 범위
+        damping: PageRank 감쇠계수
+
+    Returns:
+        [(키워드, 점수), ...] 형태 리스트
+    """
     okt = Okt()
     words = [w for w in okt.nouns(text) if len(w) > 1]
-
-    # 단어 그래프 생성
     graph = nx.Graph()
     for i, word in enumerate(words):
         for j in range(i+1, min(i+window_size, len(words))):
             graph.add_edge(word, words[j])
-
-    # PageRank 계산
     ranks = nx.pagerank(graph, alpha=damping)
-    sorted_words = sorted(ranks.items(), key=lambda x: x[1], reverse=True)
-    return sorted_words[:top_n]
+    return sorted(ranks.items(), key=lambda x: x[1], reverse=True)[:top_n]
 
-# groupName + keywords 생성
+# =========================
+# 4️⃣ 키워드 그룹 생성
+# =========================
 def create_keyword_groups(tfidf_keywords, textrank_keywords):
+    """TF-IDF와 TextRank 결과를 바탕으로 그룹화한다.
+
+    Args:
+        tfidf_keywords: TF-IDF 키워드 리스트
+        textrank_keywords: TextRank 키워드 리스트
+
+    Returns:
+        [
+            {"groupName": 대표키워드, "keywords": [관련 키워드 리스트]},
+            ...
+        ]
+    """
     groups = []
-
-    # TF-IDF 1등
     tfidf_groupName = tfidf_keywords[0][0]
-    tfidf_keywords_list = [w for w, s in tfidf_keywords[1:]]  # 나머지 상위 키워드
+    tfidf_keywords_list = [w for w, s in tfidf_keywords[1:]]
     groups.append({'groupName': tfidf_groupName, 'keywords': tfidf_keywords_list})
-
-    # TextRank 1등
     textrank_groupName = textrank_keywords[0][0]
     textrank_keywords_list = [w for w, s in textrank_keywords[1:]]
     groups.append({'groupName': textrank_groupName, 'keywords': textrank_keywords_list})
-
     return groups
 
+# =========================
+# 5️⃣ 뉴스 객체 정의
+# =========================
+class NewsArticle:
+    """뉴스 기사 객체"""
+    def __init__(self, title: str, link: str, thumbnail: str):
+        self.title = title
+        self.link = link
+        self.thumbnail = thumbnail
 
-# 4️. 결과 출력
-if __name__ == "__main__":
-    text = get_naver_news_content(news_url)
-    if text:
-        print("본문 크롤링 성공!\n")
-        tfidf_keywords = extract_keywords_tfidf(text)
-        textrank_keywords = extract_keywords_textrank(text)
-        print("🔹 TF-IDF 키워드 및 점수:")
-        for w, s in tfidf_keywords:
-            print(f"{w}: {s:.4f}")
-        
-        print("\n🔹 TextRank 키워드 및 점수:")
-        for w, s in textrank_keywords:
-            print(f"{w}: {s:.4f}")
-        my_keywordGroups = create_keyword_groups(tfidf_keywords, textrank_keywords)
-        print(my_keywordGroups)
-    else:
-        print("본문을 가져오지 못했습니다.")
+    def __repr__(self):
+        return f"NewsArticle(title={self.title}, link={self.link}, thumbnail={self.thumbnail})"
 
-'''
-추출한 키워드로 연령대별, 나이대별 선호도 조사 진행
-
-'''
-
-load_dotenv()
-
-client_id = os.environ.get("client_id")
-client_secret = os.environ.get("client_secret")
-if not client_id or not client_secret:
-    raise EnvironmentError("CLIENT_ID and SECRET environment variables must be set.")
-
-# 연령대 코드 → 설명 변환용 딕셔너리
-age_conv = {
-    '1': '0∼12세', '2': '13∼18세', '3': '19∼24세', '4': '25∼29세',
-    '5': '30∼34세', '6': '35∼39세', '7': '40∼44세', '8': '45∼49세',
-    '9': '50∼54세', '10': '55∼59세', '11': '60세 이상'
-}
-
-def getresult(startDate, endDate, timeUnit, keywordGroups, device, ages):
-    url = "https://openapi.naver.com/v1/datalab/search"
-    response_results_all = pd.DataFrame()
-
-    # 성별과 나이대 반복
-    for g in ['m', 'f']:
-        for age in ages:
-            body_dict = {
-                "startDate": startDate,
-                "endDate": endDate,
-                "timeUnit": timeUnit,
-                "keywordGroups": keywordGroups,
-                "device": device,
-                "gender": g,
-                "ages": [age]
-            }
-            body = json.dumps(body_dict)
-            request = urllib.request.Request(url, data=body.encode("utf-8"))
-            request.add_header("X-Naver-Client-Id", client_id)
-            request.add_header("X-Naver-Client-Secret", client_secret)
-            request.add_header("Content-Type", "application/json")
-            response = urllib.request.urlopen(request)
-            rescode = response.getcode()
-            if rescode != 200:
-                print(f"Error Code: {rescode}")
-                continue
-            response_body = response.read()
-            response_json = json.loads(response_body)
-
-            # DataFrame으로 변환
-            response_results = pd.DataFrame()
-            for data in response_json['results']:
-                result = pd.DataFrame(data['data'])
-                result['title'] = data['title']
-                result['age'] = age
-                result['gender'] = g
-                response_results = pd.concat([response_results, result])
-
-            response_results_all = pd.concat([response_results_all, response_results])
-
-    # 나이대별·성별 키워드 총 검색량 순위 출력
-    for g in ['m', 'f']:
-        print(f"\n===== 성별: {'남성' if g=='m' else '여성'} =====")
-        for age in ages:
-            data_sub = response_results_all[
-                (response_results_all['gender']==g) & (response_results_all['age']==age)
-            ]
-            if data_sub.empty:
-                continue
-            group_sums = data_sub.groupby('title')['ratio'].sum().sort_values(ascending=False)
-            print(f"\n[{age_conv[age]}] 키워드 순위:")
-            for idx, (title, val) in enumerate(group_sums.items(), start=1):
-                print(f"{idx}. {title}: {val:.2f}")
-
-# 실행 예시
-startDate = '2025-01-01'
-endDate = '2025-10-30'
-timeUnit = 'month'
-keywordGroups = my_keywordGroups
-device = 'pc'
-ages = ['1','2','3','4','5','6','7','8','9','10','11']
-
-getresult(startDate, endDate, timeUnit, keywordGroups, device, ages)
-
-
-'''
-둘중 하나의 키워드로 이제 검색해서 뉴스 세개만 고르기 
-'''
+# =========================
+# 6️⃣ 문자열 정리
+# =========================
 class StringCleaner:
     @staticmethod
-    def clean(txt):
-        txt=txt.replace("&lt;/b&gt;0","")
-        txt=txt.replace("&apos","")
-        txt=txt.replace("&lt;/b&gt;","")
-        txt=txt.replace("<b>","")
-        txt=txt.replace("</b>","")
-        txt=txt.replace("&quot;","")
+    def clean(txt: str) -> str:
+        txt = txt.replace("&lt;/b&gt;0","").replace("&apos","").replace("&lt;/b&gt;","")
+        txt = txt.replace("<b>","").replace("</b>","").replace("&quot;","")
         return txt
-    
-# 추출한 기사 섬네일 크롤링해오는 extract_thumbnail
-def extract_thumbnail(url):
-    """기사 페이지에서 #img1 또는 og:image 추출"""
+
+# =========================
+# 7️⃣ 기사 썸네일 추출
+# =========================
+def extract_thumbnail(url: str) -> str:
+    """기사 페이지에서 #img1 또는 og:image를 추출한다.
+
+    Args:
+        url: 뉴스 기사 URL
+
+    Returns:
+        썸네일 URL(str) 또는 None
+    """
     try:
         headers = {"User-Agent": "Mozilla/5.0"}
         res = requests.get(url, headers=headers, timeout=5)
         soup = BeautifulSoup(res.text, "html.parser")
-
-        # 1) 네이버 뉴스 대표 이미지
         img = soup.select_one("#img1")
         if img and img.get("src"):
             return img["src"]
-
-        # 2) 예비: og:image
         og = soup.find("meta", property="og:image")
         if og and og.get("content"):
             return og["content"]
-
         return None
     except:
         return None
 
+# =========================
+# 8️⃣ 최종 추천 뉴스 객체 생성
+# =========================
+def recommend_news_from_url(url: str):
+    """URL 하나만 넣으면 크롤링, 키워드 추출, 뉴스 추천까지 수행한다.
 
-def get_top3_news_with_thumbnails(keyword):
-    """네이버 뉴스 검색 상위 3개 뉴스의 제목, 링크, 썸네일 추출"""
-    NAVER_CLIENT_ID = os.environ.get("NAVER_CLIENT_ID")
-    NAVER_CLIENT_SECRET = os.environ.get("NAVER_CLIENT_SECRET")
-    if not NAVER_CLIENT_ID or not NAVER_CLIENT_SECRET:
-        raise EnvironmentError("CLIENT_ID and SECRET environment variables must be set.")
+    Args:
+        url: 추천 기반 원문 뉴스 URL
 
-    q = quote(keyword)
+    Returns:
+        [NewsArticle 객체, ...] 상위 3개 뉴스
+    """
+    text = get_naver_news_content(url)
+    if not text or "본문을 찾을 수 없습니다." in text:
+        return []
+
+    tfidf_keywords = extract_keywords_tfidf(text)
+    textrank_keywords = extract_keywords_textrank(text)
+    keyword_groups = create_keyword_groups(tfidf_keywords, textrank_keywords)
+    main_keyword = keyword_groups[0]['groupName']
+
+    # 네이버 뉴스 검색 상위 3개 추출
+    q = quote(main_keyword)
     headers = {"X-Naver-Client-Id": NAVER_CLIENT_ID, "X-Naver-Client-Secret": NAVER_CLIENT_SECRET}
-
-    # API 요청
     hc = HTTPSConnection("openapi.naver.com")
     hc.request("GET", f"/v1/search/news.xml?query={q}", headers=headers)
     res = hc.getresponse()
     resBody = res.read()
     hc.close()
+    items = list(fromstring(resBody).iter("item"))[:3]
 
-    items = list(fromstring(resBody).iter("item"))[:3]  # 상위 3개
-    result = []
-
+    news_objects = []
     for n in items:
         title = StringCleaner.clean(n.find("title").text)
         link = StringCleaner.clean(n.find("link").text)
-        thumbnail = extract_thumbnail(link)  # 썸네일 가져오기
-        result.append({
-            "title": title,
-            "link": link,
-            "thumbnail": thumbnail
-        })
+        thumbnail = extract_thumbnail(link)
+        news_objects.append(NewsArticle(title, link, thumbnail))
 
-    return result
+    return news_objects
 
+# =========================
+# CLI 테스트용
+# =========================
 if __name__ == "__main__":
-    top3_news = get_top3_news_with_thumbnails(my_keywordGroups[0]['groupName'])
-    for news in top3_news:
-        print("제목:", news["title"])
-        print("링크:", news["link"])
-        print("썸네일:", news["thumbnail"])
-        print("------------")
+    test_url = "https://n.news.naver.com/article/008/0005278558?cds=news_media_pc"
+    recommended = recommend_news_from_url(test_url)
+    for news in recommended:
+        print(news)

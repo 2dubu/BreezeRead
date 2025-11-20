@@ -1,8 +1,10 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException,Query 
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import List
 
 # summarize.py, read_time.py, crawler.py로부터 함수 import
+from BreezeRead.server.recommend import create_keyword_groups, extract_keywords_textrank, extract_keywords_tfidf, get_naver_news_content, getresult, recommend_news_from_url
 from summarize import (
     EnhancedTextRankConfig,
     EnhancedTextRankSummarizer,
@@ -32,6 +34,14 @@ class UrlRequest(BaseModel):
 
 class UrlSummarizeRequest(UrlRequest):
     top_k: int = 3
+
+class NewsResponse(BaseModel):
+    title: str
+    link: str
+    thumbnail: str
+
+class RecommendResponse(BaseModel):
+    results: List[NewsResponse]
 
 # 1) read_time
 @app.post("/readtime/url")
@@ -70,6 +80,23 @@ def summarize_from_url(req: UrlSummarizeRequest):
         "scores": summarize_result.get("scores", []),
         "abstract": summarize_result.get("abstract"),
     }
+
+# --------------------------------------------
+@app.get("/recommend", response_model=RecommendResponse)
+def recommend(url: str = Query(..., description="추천 기반 원문 뉴스 URL")):
+    """
+    URL을 입력하면 추천 뉴스 3개를 반환한다.
+
+    Args:
+        url: 추천 기반 뉴스 원문 URL
+
+    Returns:
+        results: NewsResponse 객체 리스트
+    """
+    news_objs = recommend_news_from_url(url)
+    return RecommendResponse(
+        results=[NewsResponse(title=n.title, link=n.link, thumbnail=n.thumbnail) for n in news_objs]
+    )
 
 @app.get("/health")
 def health():
