@@ -15,7 +15,31 @@ import networkx as nx
 import numpy as np
 
 '''
-사용자가 읽고있는 페이지의 본문 글 크롤링해오기 
+recommend.py 기능 핵심요약 
+
+현재 읽고 있는 기사 url 입력 
+-> 본문 크롤링
+-> tfidf/textrank 수치 계산
+-> keyword그룹 create
+-> 네이버 데이터랩에서 키워드별 검색량 추출
+-> 성별/연령별 선호 키워드 추출
+-> 키워드로 추천 기사 url/제목/thumbnail 출력
+'''
+
+'''
+[How to use]
+# 프로젝트 폴더로 이동
+cd ~/GitHub/BreezeRead/BreezeRead/recommendation
+
+# 가상환경 생성
+/opt/homebrew/bin/python3.12 -m venv venv
+
+# 가상환경 활성화
+source venv/bin/activate
+
+# 가상환경 안에서 코드 실행하기 
+python 실행파일.py
+
 '''
 
 # 1. url에서 뉴스 본문 크롤링하기 
