@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>BreezeRead Preview</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="breezeread-container">
+      <div id="breezeread-sidebar">
+        <div class="sidebar-header">
+          <div class="header-logo">
+            <img src="로고 이미지 경로" alt="BreezeRead Logo" />
+            <span>BreezeRead</span>
+          </div>
+          <button id="settingsBtn" aria-label="설정 및 관리">⚙️</button>
+        </div>
+
+        <div class="sidebar-content-area">
+          <div class="section-panel time-prediction">
+            <div class="section-title">예상 소요 시간</div>
+            <div id="readTime">
+              <span class="time-value">2분</span> |
+              <span class="difficulty-level">● ○ ○</span>
+            </div>
+          </div>
+
+          <hr />
+
+          <div class="section-panel summary-section">
+            <div class="section-title">
+              BreezeRead가 핵심을 N줄로 요약했어요
+            </div>
+            <div id="summaryArea">
+              <ol>
+                <li>핵심 요약 1.</li>
+                <li>핵심 요약 2.</li>
+                <li>핵심 요약 3.</li>
+              </ol>
+            </div>
+          </div>
+
+          <hr />
+
+          <div class="section-panel keyword-section">
+            <div class="section-title">핵심 키워드</div>
+            <div id="keywordArea">
+              <span class="keyword-tag">#키워드1</span>
+              <span class="keyword-tag">#키워드2</span>
+              <span class="keyword-tag">#키워드3</span>
+            </div>
+          </div>
+
+          <hr />
+
+          <div class="section-panel news-recommendation">
+            <div class="section-title">핵심 키워드 관련 뉴스 추천</div>
+            <div id="recommendationArea" class="news-list">
+              <div class="news-item">
+                <img src="썸네일 이미지 경로" alt="뉴스 썸네일" />
+                <p>뉴스 제목 요약...</p>
+              </div>
+            </div>
+          </div>
+
+          <hr />
+
+          <div class="section-panel bookmark-section">
+            <div class="section-title">최근 북마크한 뉴스</div>
+            <div id="bookmarkArea">
+              <div class="bookmark-manager-info">
+                사용자가 지정한 폴더별로 북마크를 관리할 수 있습니다.
+              </div>
+              <ul class="bookmark-list">
+                <li class="bookmark-folder">📁 새 프로젝트</li>
+                <li class="bookmark-folder">📁 FastAPI</li>
+                <li class="bookmark-folder">📁 마서프</li>
+                <li class="bookmark-folder">📁 데이터베이스</li>
+              </ul>
+              <div class="bookmark-action-bar">
+                <button class="action-icon">👁️</button>
+                <button class="action-icon send-icon">✉️</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="breezeread-toggle"><<</div>
+    </div>
+  </body>
+</html>
