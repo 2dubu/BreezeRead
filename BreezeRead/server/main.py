@@ -82,7 +82,7 @@ def summarize_from_url(req: UrlSummarizeRequest):
     }
 
 # --------------------------------------------
-@app.get("/recommend", response_model=RecommendResponse)
+@app.get("/recommend/url", response_model=RecommendResponse)
 def recommend(url: str = Query(..., description="추천 기반 원문 뉴스 URL")):
     """
     URL을 입력하면 추천 뉴스 3개를 반환한다.
