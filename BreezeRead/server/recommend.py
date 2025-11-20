@@ -24,6 +24,9 @@ recommend.py 기능 핵심요약
 '''
 
 '''
+추가 설치 
+pip install konlpy
+
 [How to use]
 # 프로젝트 폴더로 이동
 cd ~/GitHub/BreezeRead/BreezeRead/recommendation
@@ -129,21 +132,102 @@ def create_keyword_groups(tfidf_keywords, textrank_keywords):
         tfidf_keywords: TF-IDF 키워드 리스트
         textrank_keywords: TextRank 키워드 리스트
 
-    Returns:
+    Returns:keyword_groups
         [
-            {"groupName": 대표키워드, "keywords": [관련 키워드 리스트]},
+            {"groupName": TF-IDF 1등, "keywords": [관련 키워드 리스트]},
+            {"groupName": TextRank 1등, "keywords": [관련 키워드 리스트]},
             ...
         ]
     """
-    groups = []
+    keyword_groups = []
     tfidf_groupName = tfidf_keywords[0][0]
-    tfidf_keywords_list = [w for w, s in tfidf_keywords[1:]]
-    groups.append({'groupName': tfidf_groupName, 'keywords': tfidf_keywords_list})
+    tfidf_keywords_list = [w for w, s in tfidf_keywords[1:]]  
+    keyword_groups.append({'groupName': tfidf_groupName, 'keywords': tfidf_keywords_list})
     textrank_groupName = textrank_keywords[0][0]
     textrank_keywords_list = [w for w, s in textrank_keywords[1:]]
-    groups.append({'groupName': textrank_groupName, 'keywords': textrank_keywords_list})
-    return groups
+    keyword_groups.append({'groupName': textrank_groupName, 'keywords': textrank_keywords_list})
+    return keyword_groups
+    
+# =========================
+# 연령대별, 나이대별 선호도 조사 
+# ages는 숫자로 입력받으면 age_conv에 해당하는 나이대에 적용하게 됨. 
+# =========================
+def get_preference_result(keywordGroups, g, ages):
+    # 나이대 코드 변환
+    age_conv = {
+        '1': '0∼12세', '2': '13∼18세', '3': '19∼24세', '4': '25∼29세',
+        '5': '30∼34세', '6': '35∼39세', '7': '40∼44세', '8': '45∼49세',
+        '9': '50∼54세', '10': '55∼59세', '11': '60세 이상'
+    }
 
+    url = "https://openapi.naver.com/v1/datalab/search"
+    response_results_all = pd.DataFrame()
+
+    # 나이대별 반복
+    for age in ages:
+        body_dict = {
+            "startDate": '2025-01-01',
+            "endDate": '2025-10-30',
+            "timeUnit": 'month',
+            "keywordGroups": keywordGroups,
+            "device": 'pc',
+            "gender": g,
+            "ages": [age_conv[age]]
+        }
+        body = json.dumps(body_dict)
+        request = urllib.request.Request(url, data=body.encode("utf-8"))
+        request.add_header("X-Naver-Client-Id", CLIENT_ID)
+        request.add_header("X-Naver-Client-Secret", CLIENT_SECRET)
+        request.add_header("Content-Type", "application/json")
+        response = urllib.request.urlopen(request)
+        rescode = response.getcode()
+        if rescode != 200:
+            print(f"Error Code: {rescode}")
+            continue
+        response_body = response.read()
+        response_json = json.loads(response_body)
+
+        # DataFrame 변환
+        response_results = pd.DataFrame()
+        for data in response_json['results']:
+            result = pd.DataFrame(data['data'])
+            result['title'] = data['title']       # groupName
+            result['age'] = age
+            result['gender'] = g
+            response_results = pd.concat([response_results, result])
+
+        response_results_all = pd.concat([response_results_all, response_results])
+
+    if response_results_all.empty:
+        return None
+
+    # ratio 컬럼 float 변환
+    response_results_all['ratio'] = response_results_all['ratio'].astype(float)
+
+    # groupName(=title)별 전체 기간 합계 계산
+    group_sums = response_results_all.groupby('title')['ratio'].sum()
+
+    # 검색량이 가장 많은 groupName 선택
+    top_group = group_sums.idxmax()
+    # 해당 groupName의 키워드 리스트 가져오기
+    keywords_list = []
+    for group in keywordGroups:
+        if group['groupName'] == top_group:
+            keywords_list = group['keywords']
+            break
+
+    return {"groupName": top_group, "keywords": keywords_list}
+
+
+# =========================
+# 6️⃣ 문자열 정리
+# =========================
+class StringCleaner:
+    @staticmethod
+    def clean(txt: str) -> str:
+        txt = txt.replace("&lt;/b&gt;0","").replace("&apos","").replace("&lt;/b&gt;","")
+        txt = txt.replace("<b>","").replace("</b>","").replace("&quot;","")
+        return txt
 # =========================
 # 5️⃣ 뉴스 객체 정의
 # =========================
@@ -156,16 +240,6 @@ class NewsArticle:
 
     def __repr__(self):
         return f"NewsArticle(title={self.title}, link={self.link}, thumbnail={self.thumbnail})"
-
-# =========================
-# 6️⃣ 문자열 정리
-# =========================
-class StringCleaner:
-    @staticmethod
-    def clean(txt: str) -> str:
-        txt = txt.replace("&lt;/b&gt;0","").replace("&apos","").replace("&lt;/b&gt;","")
-        txt = txt.replace("<b>","").replace("</b>","").replace("&quot;","")
-        return txt
 
 # =========================
 # 7️⃣ 기사 썸네일 추출
@@ -212,13 +286,21 @@ def recommend_news_from_url(url: str):
     tfidf_keywords = extract_keywords_tfidf(text)
     textrank_keywords = extract_keywords_textrank(text)
     keyword_groups = create_keyword_groups(tfidf_keywords, textrank_keywords)
-    main_keyword = keyword_groups[0]['groupName']
+    # 두 그룹의 groupName 가져오기
+    group1 = keyword_groups[0]['groupName']
+    group2 = keyword_groups[1]['groupName']
 
-    # 네이버 뉴스 검색 상위 3개 추출
+    # 두 키워드를 공백 또는 다른 구분자로 합치기
+    main_keyword = f"{group1} {group2}"  # 공백으로 조합
+
+    # URL 인코딩
     q = quote(main_keyword)
+
+    # 네이버 뉴스 검색
     headers = {"X-Naver-Client-Id": NAVER_CLIENT_ID, "X-Naver-Client-Secret": NAVER_CLIENT_SECRET}
     hc = HTTPSConnection("openapi.naver.com")
     hc.request("GET", f"/v1/search/news.xml?query={q}", headers=headers)
+
     res = hc.getresponse()
     resBody = res.read()
     hc.close()
@@ -232,12 +314,66 @@ def recommend_news_from_url(url: str):
         news_objects.append(NewsArticle(title, link, thumbnail))
 
     return news_objects
+# =========================
+# 8️⃣ 연령.성별별로 추천 뉴스 객체 생성
+# =========================
+def recommend_news_with_age_gender(url, g, ages):
+    """
+    URL 하나만 넣으면 뉴스 본문 분석 → 키워드 그룹 생성 → 데이터랩 검색량 비교 → 
+    groupName + 첫 키워드로 뉴스 검색 → 상위 3개 NewsArticle 객체 반환
+
+    Args:
+        url (str): 추천 기반 원문 뉴스 URL
+        g (str): 성별 ('m' or 'f')
+        ages (list[str]): 나이대 코드 리스트, 예: ['3','4']
+
+    Returns:
+        news_objects (list[NewsArticle]): 상위 3개 뉴스 객체
+    """
+    # 1️⃣ 뉴스 본문 가져오기
+    text = get_naver_news_content(url)
+    if not text or "본문을 찾을 수 없습니다." in text:
+        return []
+
+    # 2️⃣ 키워드 추출
+    tfidf_keywords = extract_keywords_tfidf(text)
+    textrank_keywords = extract_keywords_textrank(text)
+    keyword_groups = create_keyword_groups(tfidf_keywords, textrank_keywords)
+
+    # 3️⃣ 데이터랩에서 검색량 기준 가장 인기 group 선택
+    top_group_data = get_preference_result(keyword_groups, g, ages)
+    if not top_group_data:
+        return []
+
+    # 4️⃣ groupName + 첫 키워드 조합 → 검색어
+    main_keyword = f"{top_group_data['groupName']} {top_group_data['keywords'][0]}"
+    q = quote(main_keyword)
+
+    # 5️⃣ 네이버 뉴스 검색
+    headers = {"X-Naver-Client-Id": NAVER_CLIENT_ID, "X-Naver-Client-Secret": NAVER_CLIENT_SECRET}
+    hc = HTTPSConnection("openapi.naver.com")
+    hc.request("GET", f"/v1/search/news.xml?query={q}", headers=headers)
+    res = hc.getresponse()
+    resBody = res.read()
+    hc.close()
+
+    items = list(fromstring(resBody).iter("item"))[:3]
+
+    # 6️⃣ NewsArticle 객체 생성
+    news_objects = []
+    for n in items:
+        title = StringCleaner.clean(n.find("title").text)
+        link = StringCleaner.clean(n.find("link").text)
+        thumbnail = extract_thumbnail(link)
+        news_objects.append(NewsArticle(title, link, thumbnail))  # NewsArticle 사용
+
+    return news_objects
 
 # =========================
 # CLI 테스트용
 # =========================
 if __name__ == "__main__":
-    test_url = "https://n.news.naver.com/article/008/0005278558?cds=news_media_pc"
+    test_url = "https://n.news.naver.com/mnews/article/009/0005593794"
     recommended = recommend_news_from_url(test_url)
     for news in recommended:
         print(news)
