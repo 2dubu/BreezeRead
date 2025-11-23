@@ -91,6 +91,18 @@
   padding: 0;
 }
 
+#settingsBtn img {
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+}
+
+.muted {
+  display: inline-block;
+  margin-left: 8px;
+  color: #8a8f98;
+}
+
 /* 주요 콘텐츠 영역 */
 .sidebar-content-area {
   padding: 15px;

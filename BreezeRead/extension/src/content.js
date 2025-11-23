@@ -33,6 +33,29 @@
   sidebar.innerHTML = html;
   container.appendChild(sidebar);
 
+  // 익스텐션 환경에서 assets 폴더의 이미지를 사용하도록 런타임용 src를 설정
+  try {
+    const logoImg = sidebar.querySelector('.header-logo img');
+    if (logoImg) {
+      logoImg.src = chrome.runtime.getURL('assets/setting.png');
+      logoImg.alt = 'BreezeRead Logo';
+    }
+    const settingsBtn = sidebar.querySelector('#settingsBtn');
+    if (settingsBtn) {
+      // 버튼 내부를 이미지로 교체
+      settingsBtn.innerHTML = '';
+      const img = document.createElement('img');
+      img.src = chrome.runtime.getURL('assets/setting.png');
+      img.alt = '설정';
+      img.style.width = '18px';
+      img.style.height = '18px';
+      settingsBtn.appendChild(img);
+    }
+  } catch (e) {
+    // chrome.runtime 가 없거나 접근 불가한 환경에서는 무시
+    console.debug('Could not set extension asset images', e);
+  }
+
   // === ✅ BreezeRead 기능: 읽기 시간 + 요약 호출 ===
 
   // 현재 기사 URL 기준으로 읽기 시간 가져오기
