@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from typing import List
 
 # summarize.py, read_time.py, crawler.py로부터 함수 import
-from BreezeRead.server.recommend import create_keyword_groups, extract_keywords_textrank, extract_keywords_tfidf, get_naver_news_content, get_preference_result, getresult, recommend_news_from_url
+from BreezeRead.server.recommend import get_preference_result, recommend_news_from_url, recommend_news_with_age_gender
 from summarize import (
     EnhancedTextRankConfig,
     EnhancedTextRankSummarizer,
@@ -111,7 +111,7 @@ def recommend_age_gender(
     groupName + 첫 키워드로 뉴스 검색 → 상위 3개 NewsArticle 반환
     """
     ages_list = ages.split(",")  # '3,4' → ['3','4']
-    news_objs = get_preference_result(url, gender, ages_list)
+    news_objs = recommend_news_with_age_gender(url, gender, ages_list)
     
     return RecommendResponse(
         results=[NewsResponse(title=n.title, link=n.link, thumbnail=n.thumbnail) for n in news_objs]

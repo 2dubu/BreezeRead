@@ -24,9 +24,6 @@ recommend.py 기능 핵심요약
 '''
 
 '''
-추가 설치 
-pip install konlpy
-
 [How to use]
 # 프로젝트 폴더로 이동
 cd ~/GitHub/BreezeRead/BreezeRead/recommendation
@@ -36,6 +33,10 @@ cd ~/GitHub/BreezeRead/BreezeRead/recommendation
 
 # 가상환경 활성화
 source venv/bin/activate
+
+추가 설치 
+pip install konlpy
+pip install JPype1
 
 # 가상환경 안에서 코드 실행하기 
 python 실행파일.py
