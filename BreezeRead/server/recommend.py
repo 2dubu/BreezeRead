@@ -25,19 +25,28 @@ recommend.py 기능 핵심요약
 
 '''
 [How to use]
-# 프로젝트 폴더로 이동
-cd ~/GitHub/BreezeRead/BreezeRead/recommendation
 
 # 가상환경 생성
 /opt/homebrew/bin/python3.12 -m venv venv
+# 프로젝트 폴더로 이동
+cd /Users/kimchaeryeong/GitHub/BreezeRead
 
 # 가상환경 활성화
 source venv/bin/activate
 
-추가 설치 
-pip install konlpy
-pip install JPype1
+# 실행파일로 이동 
+cd BreezeRead/server    
 
+원래 라이브러리 설치 
+
+# 추가 설치 
+pip install konlpy==0.6.0
+pip install JPype1==1.6.0
+
+# 자바 경로 설정
+brew install openjdk@17
+usr/libexec/java_home -V 
+sudo ln -sfn /opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-17.jdk
 # 가상환경 안에서 코드 실행하기 
 python 실행파일.py
 
