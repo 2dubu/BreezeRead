@@ -40,7 +40,12 @@ class NewsResponse(BaseModel):
     link: str
     thumbnail: str
 
+class KeywordGroup(BaseModel):
+    groupName: str
+    keywords: List[str]
+
 class RecommendResponse(BaseModel):
+    keyword_groups: List[KeywordGroup]
     results: List[NewsResponse]
 
 # 1) read_time
@@ -91,12 +96,17 @@ def recommend(url: str = Query(..., description="추천 기반 원문 뉴스 URL
         url: 추천 기반 뉴스 원문 URL
 
     Returns:
-        results: NewsResponse 객체 리스트
+        results: NewsResponse 객체 리스트 + 키워드 객체 
     """
     news_objs = recommend_news_from_url(url)
     return RecommendResponse(
-        results=[NewsResponse(title=n.title, link=n.link, thumbnail=n.thumbnail) for n in news_objs]
-    )
+        keyword_groups=news_objs["keyword_groups"],
+        results=[NewsResponse(
+                title=n.title,
+                link=n.link,
+                thumbnail=n.thumbnail
+                )
+            for n in news_objs["news"]])
 
 # --------------------------------------------
 # 성별이랑 연령 input하면 선호도 반영해서 기사 추천하기 
@@ -114,7 +124,12 @@ def recommend_age_gender(
     news_objs = recommend_news_with_age_gender(url, gender, ages_list)
     
     return RecommendResponse(
-        results=[NewsResponse(title=n.title, link=n.link, thumbnail=n.thumbnail) for n in news_objs]
+        keyword_groups=news_objs["keyword_groups"],
+        results=[NewsResponse(
+            title=n.title, 
+            link=n.link, 
+            thumbnail=n.thumbnail) 
+            for n in news_objs]
     )
 @app.get("/health")
 def health():

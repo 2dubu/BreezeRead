@@ -287,7 +287,7 @@ def recommend_news_from_url(url: str):
         url: 추천 기반 원문 뉴스 URL
 
     Returns:
-        [NewsArticle 객체, ...] 상위 3개 뉴스
+        [NewsArticle 객체, ...] 상위 3개 뉴스 + 기사에서 추출된 키워드 리스트
     """
     text = get_naver_news_content(url)
     if not text or "본문을 찾을 수 없습니다." in text:
@@ -323,7 +323,11 @@ def recommend_news_from_url(url: str):
         thumbnail = extract_thumbnail(link)
         news_objects.append(NewsArticle(title, link, thumbnail))
 
-    return news_objects
+    return {
+        "keyword_groups": keyword_groups,
+        "news": news_objects
+    }
+
 # =========================
 # 8️⃣ 연령.성별별로 추천 뉴스 객체 생성
 # =========================
@@ -377,7 +381,10 @@ def recommend_news_with_age_gender(url, g, ages):
         thumbnail = extract_thumbnail(link)
         news_objects.append(NewsArticle(title, link, thumbnail))  # NewsArticle 사용
 
-    return news_objects
+    return {
+        "keyword_groups": main_keyword,
+        "news": news_objects
+    }
 
 # =========================
 # CLI 테스트용
@@ -385,5 +392,15 @@ def recommend_news_with_age_gender(url, g, ages):
 if __name__ == "__main__":
     test_url = "https://n.news.naver.com/mnews/article/009/0005593794"
     recommended = recommend_news_from_url(test_url)
-    for news in recommended:
-        print(news)
+    # 🔹 키워드 출력
+    print("===== 추출된 키워드 그룹 =====")
+    for group in recommended["keyword_groups"]:
+        print(f"{group['groupName']} : {group['keywords']}")
+
+    # 🔹 뉴스 출력
+    print("\n===== 추천 뉴스 =====")
+    for news in recommended["news"]:
+        print(f"제목: {news.title}")
+        print(f"링크: {news.link}")
+        print(f"썸네일: {news.thumbnail}")
+        print("-" * 50)
