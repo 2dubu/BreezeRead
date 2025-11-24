@@ -1,6 +1,6 @@
 # crawler.py
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from urllib.parse import urlparse
 
 class CrawlError(Exception):
@@ -56,15 +56,40 @@ def extract_naver_news_text(html: str) -> str:
         "#articeBody",
         "#newsEndContents"
     ]
+    exclude_selectors = [
+        "span.end_photo_org",
+        "em.img_desc",
+        "table.nbd_table",
+        "div[style*='border-left:solid 4px']", # 이거 조심
+        ".media_end_summary",
+    ]
 
     for selector in candidates:
         node = soup.select_one(selector)
         if not node:
             continue
 
+        # ✅ dic_area인 경우: 맨 앞에 붙어 있는 <strong> 요약 블록들 제거
+        if getattr(node, "get", None) and node.get("id") == "dic_area":
+            while True:
+                # 첫 번째 자식 중 "태그"만 골라서 본다 (텍스트/개행은 건너뜀)
+                first_tag = next(
+                    (c for c in node.contents if isinstance(c, Tag)),
+                    None,
+                )
+                # 더 이상 태그가 없거나, strong이 아니면 중단
+                if not first_tag or first_tag.name != "strong":
+                    break
+                # 맨 앞 strong 제거 (요약 줄)
+                first_tag.decompose()
+
+        for ex_sel in exclude_selectors:
+            for ex in node.select(ex_sel):
+                ex.decompose()
+
         text = node.get_text()
-        if text:
-            return text
+        if text and text.strip():
+            return text.strip()
 
     # 못 찾은 경우 에러
     raise CrawlError("네이버 뉴스 본문을 찾지 못했습니다.")

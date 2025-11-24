@@ -22,7 +22,7 @@
   ],
   "content_scripts": [
     {
-      "matches": ["https://news.naver.com/*", "https://n.news.naver.com/*"],
+      "matches": ["https://n.news.naver.com/article/*", "https://n.news.naver.com/mnews/article/*"],
       "js": ["src/content.js"],
       "css": ["src/style.css"],
       "run_at": "document_idle"
@@ -31,7 +31,7 @@
   "web_accessible_resources": [
     {
       "resources": ["src/main.html", "src/style.css", "assets/*.png"],
-      "matches": ["https://news.naver.com/*", "https://n.news.naver.com/*"]
+      "matches": ["https://n.news.naver.com/*"]
     }
   ]
 }
