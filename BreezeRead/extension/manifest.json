@@ -4,21 +4,18 @@
   "version": "1.0",
   "description": "네이버 뉴스 요약 확장 프로그램입니다.",
   "icons": {
-    "16":  "assets/icon16.png",
-    "48":  "assets/icon48.png",
-    "128": "assets/icon128.png" 
+    "16": "assets/icon16.png",
+    "48": "assets/icon48.png",
+    "128": "assets/icon128.png"
   },
   "action": {
-  "default_icon": {
-    "16":  "assets/icon16.png",
-    "48":  "assets/icon48.png",
-    "128": "assets/icon128.png"
-   }
+    "default_icon": {
+      "16": "assets/icon16.png",
+      "48": "assets/icon48.png",
+      "128": "assets/icon128.png"
+    }
   },
-  "permissions": [
-    "scripting",
-    "storage"
-  ],
+  "permissions": ["scripting", "storage"],
   "host_permissions": [
     "https://news.naver.com/*",
     "https://n.news.naver.com/*"
@@ -27,13 +24,13 @@
     {
       "matches": ["https://n.news.naver.com/article/*", "https://n.news.naver.com/mnews/article/*"],
       "js": ["src/content.js"],
-      "css":["src/style.css"],
+      "css": ["src/style.css"],
       "run_at": "document_idle"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["src/main.html", "src/style.css"],
+      "resources": ["src/main.html", "src/style.css", "assets/*.png"],
       "matches": ["https://n.news.naver.com/*"]
     }
   ]

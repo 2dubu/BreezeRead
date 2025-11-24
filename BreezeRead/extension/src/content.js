@@ -3,9 +3,14 @@
   const SIDEBAR_ID = "breezeread-sidebar";
   const TOGGLE_ID = "breezeread-toggle";
   const CONTAINER_ID = "breezeread-container";
+  const LOGO_IMAGE = chrome.runtime.getURL("assets/breezecat.png");
+  const SETTINGS_IMAGE = chrome.runtime.getURL("assets/setting.png");
+  const CHEVRON_RIGHT = chrome.runtime.getURL("assets/chevron-right.png");
+  const CHEVRON_LEFT = chrome.runtime.getURL("assets/chevron-left.png");
 
   // ✅ Cloud Run API 베이스 URL
-  const API_BASE = "https://breezeread-api-866228904846.asia-northeast3.run.app";
+  const API_BASE =
+    "https://breezeread-api-866228904846.asia-northeast3.run.app";
 
   // ⭐️ [수정]: 최상위 컨테이너 ID를 기준으로 중복 실행 방지
   if (document.getElementById(CONTAINER_ID)) return;
@@ -13,7 +18,7 @@
   // HTML 및 CSS 가져오기
   const [htmlRes, cssRes] = await Promise.all([
     fetch(chrome.runtime.getURL("src/main.html")),
-    fetch(chrome.runtime.getURL("src/style.css"))
+    fetch(chrome.runtime.getURL("src/style.css")),
   ]);
   const html = await htmlRes.text();
   const cssText = await cssRes.text();
@@ -33,6 +38,27 @@
   sidebar.innerHTML = html;
   container.appendChild(sidebar);
 
+  // 익스텐션 환경에서 assets 폴더의 이미지를 사용하도록 런타임용 src를 설정
+  try {
+    const logoImg = sidebar.querySelector(".header-logo img");
+    if (logoImg) {
+      logoImg.src = LOGO_IMAGE;
+      logoImg.alt = "BreezeRead Logo";
+    }
+    const settingsBtn = sidebar.querySelector("#settingsBtn");
+    if (settingsBtn) {
+      // 버튼 내부를 이미지로 교체
+      settingsBtn.innerHTML = "";
+      const img = document.createElement("img");
+      img.src = SETTINGS_IMAGE;
+      img.alt = "설정";
+      settingsBtn.appendChild(img);
+    }
+  } catch (e) {
+    // chrome.runtime 가 없거나 접근 불가한 환경에서는 무시
+    console.debug("Could not set extension asset images", e);
+  }
+
   // === ✅ BreezeRead 기능: 읽기 시간 + 요약 호출 ===
 
   // 현재 기사 URL 기준으로 읽기 시간 가져오기
@@ -40,7 +66,7 @@
     const res = await fetch(`${API_BASE}/readtime/url`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: articleUrl })
+      body: JSON.stringify({ url: articleUrl }),
     });
 
     if (!res.ok) {
@@ -58,7 +84,7 @@
     const res = await fetch(`${API_BASE}/summarize/url`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: articleUrl, top_k: 3 })
+      body: JSON.stringify({ url: articleUrl, top_k: 3 }),
     });
 
     if (!res.ok) {
@@ -86,7 +112,7 @@
     try {
       const [readTimeMin, summary] = await Promise.all([
         fetchReadTime(articleUrl),
-        fetchSummary(articleUrl)
+        fetchSummary(articleUrl),
       ]);
 
       // 읽기 시간 UI 반영
@@ -101,17 +127,14 @@
           summaryArea.textContent = "요약할 문장을 찾지 못했어요.";
         } else {
           summaryArea.innerHTML = sentences
-            .map(
-              (s) => `<p class="summary-sentence">• ${s}</p>`
-            )
+            .map((s) => `<p class="summary-sentence">• ${s}</p>`)
             .join("");
         }
       }
     } catch (e) {
       console.error("BreezeRead API 오류:", e);
       if (readTimeValue) readTimeValue.textContent = "오류";
-      if (summaryArea)
-        summaryArea.textContent = "요약 중 오류가 발생했습니다.";
+      if (summaryArea) summaryArea.textContent = "요약 중 오류가 발생했습니다.";
     }
   }
 
@@ -122,17 +145,21 @@
   const toggleBtn = document.createElement("div");
   toggleBtn.id = TOGGLE_ID;
 
+  const toggleIcon = document.createElement("img");
+  toggleIcon.alt = "사이드바 토글";
+  toggleIcon.src = CHEVRON_RIGHT;
+  toggleBtn.appendChild(toggleIcon);
+
   // 초기 상태: 숨김 (collapsed)
   container.classList.add("collapsed");
-  toggleBtn.innerText = "<<"; // 닫힌 상태에서 열기 버튼
+  toggleIcon.src = CHEVRON_RIGHT;
 
   container.appendChild(toggleBtn);
 
   // 토글 기능
   const toggleSidebar = () => {
     const isCollapsed = container.classList.toggle("collapsed");
-    // 닫힘(collapsed) 상태면 열기 방향(>>), 열림 상태면 닫기 방향(<<)
-    toggleBtn.innerText = isCollapsed ? "<<" : ">>";
+    toggleIcon.src = isCollapsed ? CHEVRON_RIGHT : CHEVRON_LEFT;
   };
   toggleBtn.onclick = toggleSidebar;
 
