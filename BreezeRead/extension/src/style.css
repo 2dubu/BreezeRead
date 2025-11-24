@@ -1,42 +1,72 @@
 /* style.css */
 
+:root {
+  --sidebar-width: 190px;
+  --sidebar-height: 100vh;
+  --surface-bg: #f7f7f7;
+  --sidebar-bg: #fcfcfc;
+  --border-color: #ddd;
+  --divider-color: #eee;
+  --box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  --toggle-size: 30px;
+  --toggle-top: 100px;
+  --toggle-offset: -30px;
+  --header-padding: 15px;
+  --header-bg: #f0f0f0;
+  --font-family: "Arial", "Malgun Gothic", sans-serif;
+  --logo-size: 30px;
+  --logo-radius: 6px;
+  --logo-gap: 10px;
+  --settings-size: 18px;
+  --muted-color: #8a8f98;
+  --muted-margin: 8px;
+  --panel-spacing: 20px;
+  --section-title-color: #888;
+  --keyword-bg: #e6f7ff;
+  --keyword-color: #1890ff;
+  --bookmark-gap: 10px;
+  --bookmark-control-size: 30px;
+  --bookmark-radius: 50%;
+  --accent-color: #1890ff;
+}
+
 /* 1. 최상위 컨테이너: 사이드바와 토글 버튼을 포함하며 화면에 고정 */
 #breezeread-container {
   position: fixed;
   top: 0;
   left: 0; /* 왼쪽에 고정 */
-  height: 100vh;
-  width: 190px;
+  height: var(--sidebar-height);
+  width: var(--sidebar-width);
   z-index: 9999;
   transition: transform 0.3s ease; /* 애니메이션 효과 */
 }
 
 /* 2. 사이드바 본체 */
 #breezeread-sidebar {
-  width: 190px; /* 원하는 사이드바 너비 */
+  width: var(--sidebar-width); /* 원하는 사이드바 너비 */
   height: 100%;
-  background-color: #f7f7f7;
-  border-right: 1px solid #ddd;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-  padding: 15px;
+  background-color: var(--surface-bg);
+  border-right: 1px solid var(--border-color);
+  box-shadow: var(--box-shadow);
+  padding: var(--header-padding);
   box-sizing: border-box;
 }
 
 /* 3. 토글 버튼: 사이드바 옆(외부)에 위치하며 같이 움직임 */
 #breezeread-toggle {
   position: absolute;
-  top: 100px; /* 사이드바 상단에서 100px 아래에 위치 */
-  right: -30px; /* 사이드바 경계선에 붙도록 외부로 조정 */
-  width: 30px;
-  height: 30px;
-  background-color: #f7f7f7;
-  border: 1px solid #ddd;
+  top: var(--toggle-top); /* 사이드바 상단에서 100px 아래에 위치 */
+  right: var(--toggle-offset); /* 사이드바 경계선에 붙도록 외부로 조정 */
+  width: var(--toggle-size);
+  height: var(--toggle-size);
+  background-color: var(--surface-bg);
+  border: 1px solid var(--border-color);
   border-left: none;
   cursor: pointer;
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--box-shadow);
   font-size: 16px;
   border-top-right-radius: 5px;
   border-bottom-right-radius: 5px;
@@ -45,13 +75,15 @@
 
 /* 4. 'collapsed' 상태일 때 컨테이너를 왼쪽으로 이동하여 숨김 */
 #breezeread-container.collapsed {
-  transform: translateX(-190px); /* 사이드바 너비만큼 이동 */
+  transform: translateX(
+    calc(-1 * var(--sidebar-width))
+  ); /* 사이드바 너비만큼 이동 */
 }
 
 #breezeread-sidebar {
   /* ... (너비/높이/배경색 유지) ... */
-  background-color: #fcfcfc; /* 약간 밝은 배경 */
-  font-family: "Arial", "Malgun Gothic", sans-serif;
+  background-color: var(--sidebar-bg); /* 약간 밝은 배경 */
+  font-family: var(--font-family);
   padding: 0; /* 내부 패딩을 제거하고 섹션별로 패딩을 줍니다 */
   overflow-y: auto; /* 내용이 길어지면 스크롤 가능 */
 }
@@ -61,9 +93,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px;
-  background-color: #f0f0f0; /* 헤더 배경 */
-  border-bottom: 1px solid #ddd;
+  padding: var(--header-padding);
+  background-color: var(--header-bg); /* 헤더 배경 */
+  border-bottom: 1px solid var(--border-color);
   position: sticky; /* 스크롤 되어도 상단 고정 */
   top: 0;
   z-index: 10;
@@ -76,10 +108,10 @@
   color: #4a4a4a;
 }
 .header-logo img {
-  width: 30px;
-  height: 30px;
-  margin-right: 10px;
-  border-radius: 6px;
+  width: var(--logo-size);
+  height: var(--logo-size);
+  margin-right: var(--logo-gap);
+  border-radius: var(--logo-radius);
   object-fit: cover;
 }
 #settingsBtn {
@@ -92,39 +124,39 @@
 }
 
 #settingsBtn img {
-  width: 18px;
-  height: 18px;
+  width: var(--settings-size);
+  height: var(--settings-size);
   display: inline-block;
 }
 
 .muted {
   display: inline-block;
-  margin-left: 8px;
-  color: #8a8f98;
+  margin-left: var(--muted-margin);
+  color: var(--muted-color);
 }
 
 /* 주요 콘텐츠 영역 */
 .sidebar-content-area {
-  padding: 15px;
+  padding: var(--header-padding);
 }
 
 /* 공통 섹션 스타일 */
 .section-panel {
-  margin-bottom: 20px;
+  margin-bottom: var(--panel-spacing);
 }
 
 .section-title {
   font-size: 0.9em;
   font-weight: bold;
-  color: #888;
+  color: var(--section-title-color);
   margin-bottom: 10px;
 }
 
 hr {
   border: 0;
   height: 1px;
-  background: #eee;
-  margin: 20px 0;
+  background: var(--divider-color);
+  margin: var(--panel-spacing) 0;
 }
 
 /* 1. 소요 시간 */
@@ -150,8 +182,8 @@ hr {
 /* 3. 핵심 키워드 */
 .keyword-tag {
   display: inline-block;
-  background-color: #e6f7ff;
-  color: #1890ff;
+  background-color: var(--keyword-bg);
+  color: var(--keyword-color);
   border-radius: 12px;
   padding: 4px 10px;
   margin-right: 5px;
@@ -162,7 +194,7 @@ hr {
 /* 4. 관련 뉴스 추천 */
 .news-list {
   display: flex;
-  gap: 10px;
+  gap: var(--bookmark-gap);
   overflow-x: auto; /* 가로 스크롤 가능 */
   padding-bottom: 5px;
 }
@@ -210,15 +242,15 @@ hr {
 .bookmark-action-bar {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: var(--bookmark-gap);
   margin-top: 15px;
 }
 .bookmark-action-bar button {
   background: none;
-  border: 1px solid #ddd;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--bookmark-radius);
+  width: var(--bookmark-control-size);
+  height: var(--bookmark-control-size);
   cursor: pointer;
   font-size: 1em;
   display: flex;
@@ -226,7 +258,7 @@ hr {
   justify-content: center;
 }
 .send-icon {
-  background-color: #1890ff;
+  background-color: var(--accent-color);
   color: white;
   border: none;
 }
