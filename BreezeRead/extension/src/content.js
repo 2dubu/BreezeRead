@@ -52,8 +52,6 @@
       const img = document.createElement("img");
       img.src = SETTINGS_IMAGE;
       img.alt = "설정";
-      img.style.width = "18px";
-      img.style.height = "18px";
       settingsBtn.appendChild(img);
     }
   } catch (e) {
@@ -149,8 +147,6 @@
 
   const toggleIcon = document.createElement("img");
   toggleIcon.alt = "사이드바 토글";
-  toggleIcon.style.width = "16px";
-  toggleIcon.style.height = "16px";
   toggleIcon.src = CHEVRON_RIGHT;
   toggleBtn.appendChild(toggleIcon);
 
