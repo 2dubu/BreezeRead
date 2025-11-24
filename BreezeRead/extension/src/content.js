@@ -5,7 +5,7 @@
   const CONTAINER_ID = "breezeread-container";
   const LOGO_IMAGE = chrome.runtime.getURL("assets/breezecat.png");
   const SETTINGS_IMAGE = chrome.runtime.getURL("assets/setting.png");
-  const CHEVRON_RIGHT = chrome.runtime.getURL("assets/chevron-rignt.png");
+  const CHEVRON_RIGHT = chrome.runtime.getURL("assets/chevron-right.png");
   const CHEVRON_LEFT = chrome.runtime.getURL("assets/chevron-left.png");
 
   // ✅ Cloud Run API 베이스 URL
