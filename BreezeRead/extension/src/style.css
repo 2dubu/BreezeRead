@@ -73,6 +73,12 @@
   z-index: 10000;
 }
 
+#breezeread-toggle img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
 /* 4. 'collapsed' 상태일 때 컨테이너를 왼쪽으로 이동하여 숨김 */
 #breezeread-container.collapsed {
   transform: translateX(
