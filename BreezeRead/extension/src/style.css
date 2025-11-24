@@ -17,7 +17,7 @@
   --logo-size: 30px;
   --logo-radius: 6px;
   --logo-gap: 10px;
-  --settings-size: 18px;
+  --settings-size: 20px;
   --muted-color: #8a8f98;
   --muted-margin: 8px;
   --panel-spacing: 20px;
@@ -102,8 +102,8 @@
 }
 .header-logo {
   display: flex;
-  align-items: center;
-  font-size: 1.2em;
+  align-items: flex-end;
+  font-size: 1em;
   font-weight: bold;
   color: #4a4a4a;
 }
@@ -117,7 +117,7 @@
 #settingsBtn {
   background: none;
   border: none;
-  font-size: 1.5em;
+  font-size: 1.6em;
   cursor: pointer;
   color: #555;
   padding: 0;
