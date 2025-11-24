@@ -5,6 +5,8 @@
   const CONTAINER_ID = "breezeread-container";
   const LOGO_IMAGE = chrome.runtime.getURL("assets/breezecat.png");
   const SETTINGS_IMAGE = chrome.runtime.getURL("assets/setting.png");
+  const CHEVRON_RIGHT = chrome.runtime.getURL("assets/chevron-rignt.png");
+  const CHEVRON_LEFT = chrome.runtime.getURL("assets/chevron-left.png");
 
   // ✅ Cloud Run API 베이스 URL
   const API_BASE =
@@ -145,17 +147,23 @@
   const toggleBtn = document.createElement("div");
   toggleBtn.id = TOGGLE_ID;
 
+  const toggleIcon = document.createElement("img");
+  toggleIcon.alt = "사이드바 토글";
+  toggleIcon.style.width = "16px";
+  toggleIcon.style.height = "16px";
+  toggleIcon.src = CHEVRON_RIGHT;
+  toggleBtn.appendChild(toggleIcon);
+
   // 초기 상태: 숨김 (collapsed)
   container.classList.add("collapsed");
-  toggleBtn.innerText = "<<"; // 닫힌 상태에서 열기 버튼
+  toggleIcon.src = CHEVRON_RIGHT;
 
   container.appendChild(toggleBtn);
 
   // 토글 기능
   const toggleSidebar = () => {
     const isCollapsed = container.classList.toggle("collapsed");
-    // 닫힘(collapsed) 상태면 열기 방향(>>), 열림 상태면 닫기 방향(<<)
-    toggleBtn.innerText = isCollapsed ? "<<" : ">>";
+    toggleIcon.src = isCollapsed ? CHEVRON_RIGHT : CHEVRON_LEFT;
   };
   toggleBtn.onclick = toggleSidebar;
 
