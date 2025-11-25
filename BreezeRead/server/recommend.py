@@ -342,12 +342,12 @@ def recommend_news_with_age_gender(url, g, ages):
         ages (list[str]): 나이대 코드 리스트, 예: ['3','4']
 
     Returns:
-        news_objects (list[NewsArticle]): 상위 3개 뉴스 객체
+        dict: {"keyword_groups": [top_group_data] 또는 [], "news": [NewsArticle 객체들] 또는 []}
     """
     # 1️⃣ 뉴스 본문 가져오기
     text = get_naver_news_content(url)
     if not text or "본문을 찾을 수 없습니다." in text:
-        return []
+        return {"keyword_groups": [], "news": []}
 
     # 2️⃣ 키워드 추출
     tfidf_keywords = extract_keywords_tfidf(text)
@@ -357,10 +357,13 @@ def recommend_news_with_age_gender(url, g, ages):
     # 3️⃣ 데이터랩에서 검색량 기준 가장 인기 group 선택
     top_group_data = get_preference_result(keyword_groups, g, ages)
     if not top_group_data:
-        return []
+        return {"keyword_groups": [], "news": []}
 
     # 4️⃣ groupName + 첫 키워드 조합 → 검색어
-    main_keyword = f"{top_group_data['groupName']} {top_group_data['keywords'][0]}"
+    if top_group_data['keywords']:
+        main_keyword = f"{top_group_data['groupName']} {top_group_data['keywords'][0]}"
+    else:
+        main_keyword = top_group_data['groupName']
     q = quote(main_keyword)
 
     # 5️⃣ 네이버 뉴스 검색
