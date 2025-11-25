@@ -10,7 +10,6 @@ import requests
 from bs4 import BeautifulSoup
 from sklearn.feature_extraction.text import TfidfVectorizer
 from konlpy.tag import Okt
-from collections import Counter
 import networkx as nx
 import numpy as np
 
