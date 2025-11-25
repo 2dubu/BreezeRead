@@ -291,7 +291,7 @@ def recommend_news_from_url(url: str):
     """
     text = get_naver_news_content(url)
     if not text or "본문을 찾을 수 없습니다." in text:
-        return []
+        return {"keyword_groups": [], "news": []}
 
     tfidf_keywords = extract_keywords_tfidf(text)
     textrank_keywords = extract_keywords_textrank(text)
@@ -382,9 +382,10 @@ def recommend_news_with_age_gender(url, g, ages):
         news_objects.append(NewsArticle(title, link, thumbnail))  # NewsArticle 사용
 
     return {
-        "keyword_groups": main_keyword,
+        "keyword_groups": [top_group_data],
         "news": news_objects
     }
+
 
 # =========================
 # CLI 테스트용
