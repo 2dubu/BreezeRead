@@ -11,7 +11,6 @@ from bs4 import BeautifulSoup
 from sklearn.feature_extraction.text import TfidfVectorizer
 from konlpy.tag import Okt
 import networkx as nx
-import numpy as np
 
 '''
 사용자가 읽고있는 페이지의 본문 글 크롤링해오기 
