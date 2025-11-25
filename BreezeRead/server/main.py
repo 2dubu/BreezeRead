@@ -1,8 +1,10 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query 
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import List
 
 # summarize.py, read_time.py, crawler.py로부터 함수 import
+from BreezeRead.server.recommend import recommend_news_from_url, recommend_news_with_age_gender
 from summarize import (
     EnhancedTextRankConfig,
     EnhancedTextRankSummarizer,
@@ -32,6 +34,19 @@ class UrlRequest(BaseModel):
 
 class UrlSummarizeRequest(UrlRequest):
     top_k: int = 3
+
+class NewsResponse(BaseModel):
+    title: str
+    link: str
+    thumbnail: str
+
+class KeywordGroup(BaseModel):
+    groupName: str
+    keywords: List[str]
+
+class RecommendResponse(BaseModel):
+    keyword_groups: List[KeywordGroup]
+    results: List[NewsResponse]
 
 # 1) read_time
 @app.post("/readtime/url")
@@ -71,6 +86,51 @@ def summarize_from_url(req: UrlSummarizeRequest):
         "abstract": summarize_result.get("abstract"),
     }
 
+# --------------------------------------------
+@app.get("/recommend/url", response_model=RecommendResponse)
+def recommend(url: str = Query(..., description="추천 기반 원문 뉴스 URL")):
+    """
+    URL을 입력하면 추천 뉴스 3개를 반환한다.
+
+    Args:
+        url: 추천 기반 뉴스 원문 URL
+
+    Returns:
+        results: NewsResponse 객체 리스트 + 키워드 객체 
+    """
+    news_objs = recommend_news_from_url(url)
+    return RecommendResponse(
+        keyword_groups=news_objs["keyword_groups"],
+        results=[NewsResponse(
+                title=n.title,
+                link=n.link,
+                thumbnail=n.thumbnail
+                )
+            for n in news_objs["news"]])
+
+# --------------------------------------------
+# 성별이랑 연령 input하면 선호도 반영해서 기사 추천하기 
+@app.get("/recommend/age-gender", response_model=RecommendResponse)
+def recommend_age_gender(
+    url: str = Query(..., description="추천 기반 뉴스 원문 URL"),
+    gender: str = Query(..., description="'m' 또는 'f'"),
+    ages: str = Query(..., description="콤마로 구분된 나이대 코드, 예: '3,4'")
+):
+    """
+    URL + 성별 + 나이대 입력 → 키워드 그룹 분석 → 데이터랩 검색량 비교 →
+    groupName + 첫 키워드로 뉴스 검색 → 상위 3개 NewsArticle 반환
+    """
+    ages_list = ages.split(",")  # '3,4' → ['3','4']
+    news_objs = recommend_news_with_age_gender(url, gender, ages_list)
+    
+    return RecommendResponse(
+        keyword_groups=news_objs["keyword_groups"],
+        results=[NewsResponse(
+            title=n.title, 
+            link=n.link, 
+            thumbnail=n.thumbnail) 
+            for n in news_objs]
+    )
 @app.get("/health")
 def health():
     return {"status": "ok"}
