@@ -210,15 +210,15 @@ NAVER_CLIENT_SECRET = os.environ.get("NAVER_CLIENT_SECRET")
 if not client_id or not NAVER_CLIENT_SECRET:
     raise EnvironmentError("CLIENT_ID and SECRET environment variables must be set.")
 # 위에서 선택한 키워드불러오기 
-q=my_keywordGroups[0]['groupName']
-q=quote(q)
+q = my_keywordGroups[0]['groupName']
+q = quote(q)
 # req header
-h={"X-Naver-Client-Id" : NAVER_CLIENT_ID,"X-Naver-Client-Secret":NAVER_CLIENT_SECRET}
-hc=HTTPSConnection("openapi.naver.com")
+h = {"X-Naver-Client-Id" : NAVER_CLIENT_ID, "X-Naver-Client-Secret": NAVER_CLIENT_SECRET}
+hc = HTTPSConnection("openapi.naver.com")
 # 요청 방식이 GET이라는 조건 
-hc.request("GET","/v1/search/news.xml?query="+q,headers=h)
-res=hc.getresponse() 
-resBody=res.read() 
+hc.request("GET", "/v1/search/news.xml?query=" + q, headers=h)
+res = hc.getresponse() 
+resBody = res.read() 
 hc.close()
 
 for n in fromstring(resBody).iter("item"):
