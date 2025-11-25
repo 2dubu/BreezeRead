@@ -129,7 +129,7 @@ def recommend_age_gender(
             title=n.title, 
             link=n.link, 
             thumbnail=n.thumbnail) 
-            for n in news_objs]
+            for n in news_objs["news"]]
     )
 @app.get("/health")
 def health():
