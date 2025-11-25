@@ -197,12 +197,12 @@ getresult(startDate, endDate, timeUnit, keywordGroups, device, ages)
 class StringCleaner:
     @staticmethod
     def clean(txt):
-        txt=txt.replace("&lt;/b&gt;0","")
-        txt=txt.replace("&apos","")
-        txt=txt.replace("&lt;/b&gt;","")
-        txt=txt.replace("<b>","")
-        txt=txt.replace("</b>","")
-        txt=txt.replace("&quot;","")
+        txt = txt.replace("&lt;/b&gt;0","")
+        txt = txt.replace("&apos","")
+        txt = txt.replace("&lt;/b&gt;","")
+        txt = txt.replace("<b>","")
+        txt = txt.replace("</b>","")
+        txt = txt.replace("&quot;","")
         return txt
     
 NAVER_CLIENT_ID = os.environ.get("NAVER_CLIENT_ID")
