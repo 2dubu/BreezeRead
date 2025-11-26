@@ -347,7 +347,7 @@ def recommend_news_with_age_gender(url, g, ages):
     # 1️⃣ 뉴스 본문 가져오기
     text = get_naver_news_content(url)
     if not text or "본문을 찾을 수 없습니다." in text:
-        return []
+        return {"keyword_groups": [], "news": []}
 
     # 2️⃣ 키워드 추출
     tfidf_keywords = extract_keywords_tfidf(text)
@@ -357,7 +357,7 @@ def recommend_news_with_age_gender(url, g, ages):
     # 3️⃣ 데이터랩에서 검색량 기준 가장 인기 group 선택
     top_group_data = get_preference_result(keyword_groups, g, ages)
     if not top_group_data:
-        return []
+        return {"keyword_groups": [], "news": []}
 
     # 4️⃣ groupName + 첫 키워드 조합 → 검색어
     main_keyword = f"{top_group_data['groupName']} {top_group_data['keywords'][0]}"
@@ -372,6 +372,13 @@ def recommend_news_with_age_gender(url, g, ages):
     hc.close()
 
     items = list(fromstring(resBody).iter("item"))[:3]
+        # Error handling for HTTP status and XML parsing
+    if res.status != 200:
+        return []
+    try:
+        items = list(fromstring(resBody).iter("item"))[:3]
+    except Exception:
+        return []
 
     # 6️⃣ NewsArticle 객체 생성
     news_objects = []
