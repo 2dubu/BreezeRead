@@ -138,9 +138,6 @@
     }
   }
 
-  // === (예전 placeholder) startBtn/newsArea 코드는 일단 보류 ===
-  // main.html에는 #startBtn / #newsArea가 없으므로, 기존 로직은 제거/보류하는 게 안전함.
-
   // 3. 토글 버튼 생성 (사이드바 외부, 컨테이너 내부에 위치)
   const toggleBtn = document.createElement("div");
   toggleBtn.id = TOGGLE_ID;
@@ -162,8 +159,83 @@
     toggleIcon.src = isCollapsed ? CHEVRON_RIGHT : CHEVRON_LEFT;
   };
   toggleBtn.onclick = toggleSidebar;
+  
+  // 4. 북마크 버튼 이벤트 핸들링 (chrome.storage 접근)
+  const saveBtn = sidebar.querySelector(".saveBtn");
+  const loadBtn = sidebar.querySelector(".loadBtn");
 
-  // 4. popup.html에서 보낸 메시지 수신 및 사이드바 토글
+  // ⭐️ `saveBtn` 클릭 이벤트 리스너
+  if (saveBtn) {
+    saveBtn.addEventListener("click", () => {
+      const articleTitle = document.querySelector('h2#title_area > span')?.textContent.trim() || '제목 없음';
+      const articleUrl = window.location.href;
+      
+      const newBookmark = {
+          title: articleTitle,
+          url: articleUrl,
+          timestamp: Date.now()
+      };
+      
+      chrome.storage.local.get(["breezeReadBookmarks"], (result) => {
+          const bookmarks = result.breezeReadBookmarks || [];
+          
+          if (bookmarks.some(b => b.url === articleUrl)) {
+              alert("이미 북마크된 기사입니다!");
+              return;
+          }
+          
+          bookmarks.push(newBookmark);
+          
+          chrome.storage.local.set({ breezeReadBookmarks: bookmarks }, () => {
+              console.log("북마크 저장 완료:", newBookmark.title);
+              alert(`북마크 저장 완료: ${newBookmark.title}`);
+          });
+      });
+    });
+  }
+
+  // ⭐️ `loadBtn` 클릭 이벤트 리스너
+  if (loadBtn) {
+    loadBtn.addEventListener("click", () => {
+      chrome.storage.local.get(["breezeReadBookmarks"], (result) => {
+        const bookmarks = result.breezeReadBookmarks || [];
+        console.log("DB에서 불러온 북마크 목록:", bookmarks);
+        
+        // 🚨 수정된 부분: loadBtn의 결과로 사이드바 UI 업데이트가 이루어져야 합니다.
+        // 현재는 alert만 뜨고 있으므로, 사이드바의 #bookmarkArea를 업데이트하는 로직을 추가하는 것이 좋습니다.
+        
+        const bookmarkArea = sidebar.querySelector("#bookmarkArea");
+        
+        if (bookmarkArea) {
+            const ul = bookmarkArea.querySelector('.bookmark-list') || document.createElement('ul');
+            ul.className = 'bookmark-list';
+            
+            if (bookmarks.length === 0) {
+                ul.innerHTML = '<li class="no-bookmark-item">저장된 북마크가 없습니다.</li>';
+            } else {
+                // 최신 5개만 보여주기
+                ul.innerHTML = bookmarks.slice(-5).reverse().map((b) => {
+                    // 기사 제목을 25자까지만 표시 (너무 길어지는 것을 방지)
+                    const displayTitle = b.title.length > 25 ? b.title.substring(0, 25) + '...' : b.title;
+                    return `<li class="bookmark-item"><a href="${b.url}" target="_blank" title="${b.title}">🔗 ${displayTitle}</a></li>`;
+                }).join('');
+            }
+            
+            // 기존 폴더 정보 표시 영역(HTML에 있는 더미 데이터)을 지우고 목록을 삽입
+            const existingInfo = bookmarkArea.querySelector('.bookmark-manager-info');
+            if(existingInfo) existingInfo.style.display = 'none';
+
+            const existingList = bookmarkArea.querySelector('.bookmark-list');
+            if(!existingList) bookmarkArea.insertBefore(ul, bookmarkArea.querySelector('.bookmark-action-bar'));
+        }
+        
+        alert(`총 ${bookmarks.length}개의 북마크를 불러왔습니다. 사이드바를 확인하세요.`);
+
+      }); // 🚨 수정된 부분: chrome.storage.local.get 닫는 괄호
+    }); // 🚨 수정된 부분: loadBtn.addEventListener 닫는 괄호
+  }
+
+  // 5. popup.html에서 보낸 메시지 수신 및 사이드바 토글
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "toggleSidebar") {
       toggleSidebar();
@@ -172,4 +244,4 @@
 
   // ✅ 사이드바가 세팅되면 바로 현재 기사 분석 실행
   runBreezeRead();
-})();
+})(); 

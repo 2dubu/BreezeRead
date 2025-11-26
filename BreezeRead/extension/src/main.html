@@ -1,86 +1,95 @@
-<div class="sidebar-header">
-  <div class="header-logo">
-    <img src="../assets/breezecat.png" alt="BreezeCat" />
-    <span>BreezeCat</span>
-  </div>
-  <button id="settingsBtn" aria-label="설정">
-    <img src="../assets/setting.png" alt="설정" />
-  </button>
-</div>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+</head>
 
-<div class="sidebar-content-area">
-  <div class="section-panel time-prediction">
-    <div class="section-title">예상 소요 시간</div>
-    <div id="readTime">
-      <span class="time-value">2분</span>
-      <div class="muted">난이도: ● ○ ○</div>
+<body>
+  <div class="sidebar-header">
+    <div class="header-logo">
+      <img src="../assets/breezecat.png" alt="BreezeCat" />
+      <span>BreezeCat</span>
     </div>
+    <button id="settingsBtn" aria-label="설정">
+      <img src="../assets/setting.png" alt="설정" />
+    </button>
   </div>
 
-  <hr />
-
-  <div class="section-panel summary-section">
-    <div class="section-title">핵심 요약</div>
-    <div id="summaryArea">
-      <ol>
-        <li class="summary-sentence">
-          핵심 요약 1. 중요한 문장을 간결하게 보여줍니다.
-        </li>
-        <li class="summary-sentence">
-          핵심 요약 2. 두 번째 요약 문장 예시입니다.
-        </li>
-        <li class="summary-sentence">
-          핵심 요약 3. 세 번째 문장 예시로 마무리합니다.
-        </li>
-      </ol>
-    </div>
-  </div>
-
-  <hr />
-
-  <div class="section-panel keyword-section">
-    <div class="section-title">핵심 키워드</div>
-    <div id="keywordArea">
-      <span class="keyword-tag">#키워드1</span>
-      <span class="keyword-tag">#키워드2</span>
-      <span class="keyword-tag">#키워드3</span>
-    </div>
-  </div>
-
-  <hr />
-
-  <div class="section-panel news-recommendation">
-    <div class="section-title">관련 뉴스 추천</div>
-    <div id="recommendationArea" class="news-list">
-      <div class="news-item">
-        <img src="썸네일 이미지 경로" alt="뉴스 썸네일" />
-        <p>뉴스 제목 요약...</p>
-      </div>
-      <div class="news-item">
-        <img src="썸네일 이미지 경로" alt="뉴스 썸네일" />
-        <p>뉴스 제목 요약...</p>
+  <div class="sidebar-content-area">
+    <div class="section-panel time-prediction">
+      <div class="section-title">예상 소요 시간</div>
+      <div id="readTime">
+        <span class="time-value">2분</span>
+        <div class="muted">난이도: ● ○ ○</div>
       </div>
     </div>
-  </div>
 
-  <hr />
+    <hr />
 
-  <div class="section-panel bookmark-section">
-    <div class="section-title">최근 북마크</div>
-    <div id="bookmarkArea">
-      <div class="bookmark-manager-info">
-        폴더별로 북마크를 관리할 수 있습니다.
+    <div class="section-panel summary-section">
+      <div class="section-title">핵심 요약</div>
+      <div id="summaryArea">
+        <ol>
+          <li class="summary-sentence">
+            핵심 요약 1. 중요한 문장을 간결하게 보여줍니다.
+          </li>
+          <li class="summary-sentence">
+            핵심 요약 2. 두 번째 요약 문장 예시입니다.
+          </li>
+          <li class="summary-sentence">
+            핵심 요약 3. 세 번째 문장 예시로 마무리합니다.
+          </li>
+        </ol>
       </div>
-      <ul class="bookmark-list">
-        <li class="bookmark-folder">📁 새 프로젝트</li>
-        <li class="bookmark-folder">📁 FastAPI</li>
-        <li class="bookmark-folder">📁 마서프</li>
-        <li class="bookmark-folder">📁 데이터베이스</li>
-      </ul>
-      <div class="bookmark-action-bar">
-        <button class="action-icon" title="미리보기">👁️</button>
-        <button class="action-icon send-icon" title="공유">✉️</button>
+    </div>
+
+    <hr />
+
+    <div class="section-panel keyword-section">
+      <div class="section-title">핵심 키워드</div>
+      <div id="keywordArea">
+        <span class="keyword-tag">#키워드1</span>
+        <span class="keyword-tag">#키워드2</span>
+        <span class="keyword-tag">#키워드3</span>
+      </div>
+    </div>
+
+    <hr />
+
+    <div class="section-panel news-recommendation">
+      <div class="section-title">관련 뉴스 추천</div>
+      <div id="recommendationArea" class="news-list">
+        <div class="news-item">
+          <img src="썸네일 이미지 경로" alt="뉴스 썸네일" />
+          <p>뉴스 제목 요약...</p>
+        </div>
+        <div class="news-item">
+          <img src="썸네일 이미지 경로" alt="뉴스 썸네일" />
+          <p>뉴스 제목 요약...</p>
+        </div>
+      </div>
+    </div>
+
+    <hr />
+
+    <div class="section-panel bookmark-section">
+      <div class="section-title">최근 북마크</div>
+      <div id="bookmarkArea">
+        <div class="bookmark-manager-info">
+          폴더별로 북마크를 관리할 수 있습니다.
+        </div>
+        <ul class="bookmark-list">
+          <li class="bookmark-folder">📁 새 프로젝트</li>
+          <li class="bookmark-folder">📁 FastAPI</li>
+          <li class="bookmark-folder">📁 마서프</li>
+          <li class="bookmark-folder">📁 데이터베이스</li>
+        </ul>
+        <div class="bookmark-action-bar">
+          <button class="saveBtn">저장</button>
+          <button class="loadBtn">불러오기</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
+</body>
+</html>

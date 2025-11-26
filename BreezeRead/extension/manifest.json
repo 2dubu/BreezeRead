@@ -15,7 +15,12 @@
       "128": "assets/icon128.png"
     }
   },
-  "permissions": ["scripting", "storage"],
+  "permissions": [
+    "scripting", 
+    "storage",
+    "cookies",
+    "tabs"
+  ],
   "host_permissions": [
     "https://news.naver.com/*",
     "https://n.news.naver.com/*"
