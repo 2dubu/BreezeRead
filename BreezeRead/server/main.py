@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from typing import List
 
 # summarize.py, read_time.py, crawler.py로부터 함수 import
-from BreezeRead.server.recommend import recommend_news_from_url, recommend_news_with_age_gender
+from recommend import recommend_news_from_url, recommend_news_with_age_gender
 from summarize import (
     EnhancedTextRankConfig,
     EnhancedTextRankSummarizer,
