@@ -370,3 +370,24 @@ hr {
     white-space: nowrap;
     text-overflow: ellipsis;
 }
+/* 숨김 처리 CSS */
+.bookmark-details-container.hidden {
+    display: none;
+}
+
+/* 토글 버튼 디자인 개선 (선택 사항) */
+.bookmark-folder-item {
+    border-bottom: 1px solid #eee;
+}
+.folder-toggle-btn {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    padding: 8px 10px;
+    cursor: pointer;
+}
+.toggle-icon {
+    float: right;
+    margin-left: 5px;
+}

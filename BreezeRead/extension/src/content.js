@@ -170,7 +170,11 @@
 // =========================================================================
   // 📁 북마크 폴더 관리 로직
   // =========================================================================
-/**
+// =========================================================================
+  // ⭐️ 2. 데이터 로드 및 초기화
+  // =========================================================================
+
+  /**
    * 로컬 스토리지에서 북마크 폴더 데이터를 로드하거나, 
    * 데이터가 없으면 초기 데이터를 설정하고 반환합니다.
    * @returns {Promise<Array>} 북마크 폴더 배열
@@ -196,74 +200,73 @@
   // =========================================================================
 
   /**
-   * 북마크 폴더 목록을 렌더링하고 토글 기능을 추가합니다.
-   * @param {Array} INITIAL_BOOKMARK_DATA - 폴더 데이터
-   * @param {HTMLElement} container - 목록을 담을 상위 요소 (sidebar)
+   * 전체 폴더 목록을 개별 토글 요소로 렌더링하고 클릭 이벤트를 바인딩합니다.
+   * @param {Array} folders - 전체 폴더 데이터
+   * @param {HTMLElement} container - 폴더 목록을 담을 상위 요소 (#bookmarkFolderArea)
    */
-  function renderBookmarkFolders(INITIAL_BOOKMARK_DATA, container) {
-    if (!container) return;
+  function renderFolderToggles(folders, container) {
+      if (!container) return;
+      container.innerHTML = ''; // 기존 목록 초기화
 
-    let listEl = container.querySelector("#bookmarkFolderArea");
-    
-    if (!listEl) {
-      listEl = document.createElement("div"); 
-      listEl.id = "bookmarkFolderArea";
-      container.querySelector('.bookmark-section')?.appendChild(listEl); // bookmark-section 안에 삽입
-    }
+      folders.forEach(folder => {
+          const count = folder.bookmarks.length;
+          
+          // 1. 개별 폴더 요소 생성 (각 폴더가 토글 가능하도록)
+          const folderDiv = document.createElement('div');
+          folderDiv.classList.add('bookmark-folder-item');
+          folderDiv.dataset.folderId = folder.folderId; // ID 저장
 
-    const folderListHtml = INITIAL_BOOKMARK_DATA.map(folder => {
-      const count = folder.bookmarks.length;
-      return `
-        <li class="bookmark-folder" data-folder-id="${folder.folderId}">
-          📁 ${folder.folderName} (${count}개)
-        </li>
-      `;
-    }).join("");
-    
-    // 토글 버튼과 목록을 포함하는 HTML 구조 생성
-    listEl.innerHTML = `
-      <div class="folder-toggle-header">
-        <button id="folderListToggleButton">
-          북마크 폴더 목록 (${INITIAL_BOOKMARK_DATA.length}개)
-          <span class="toggle-icon">▼</span>
-        </button>
-      </div>
-      <ul id="folderListContainer" class="folder-list-hidden"> 
-        ${folderListHtml}
-      </ul>
-    `; 
-    
-    // 3. 토글 이벤트 바인딩
-    const toggleButton = listEl.querySelector("#folderListToggleButton");
-    const listContainer = listEl.querySelector("#folderListContainer");
+          folderDiv.innerHTML = `
+              <button class="folder-toggle-btn">
+                  📁 ${folder.folderName} (${count}개)
+                  <span class="toggle-icon">▶</span>
+              </button>
+              <div class="bookmark-details-container hidden"> 
+                </div>
+          `;
 
-    toggleButton.addEventListener("click", () => {
-      listContainer.classList.toggle("folder-list-hidden");
-      const icon = toggleButton.querySelector(".toggle-icon");
-      if (listContainer.classList.contains("folder-list-hidden")) {
-        icon.textContent = "▼"; // 닫힘
-      } else {
-        icon.textContent = "▲"; // 열림
-      }
-    });
+          // 2. 이벤트 리스너 바인딩 (개별 토글 로직)
+          folderDiv.querySelector('.folder-toggle-btn').addEventListener('click', () => {
+              const detailsContainer = folderDiv.querySelector('.bookmark-details-container');
+              const icon = folderDiv.querySelector('.toggle-icon');
+              
+              const isHidden = detailsContainer.classList.contains('hidden');
+
+              // 닫혀 있다면 -> 열고 상세 목록 렌더링
+              if (isHidden) {
+                  renderBookmarksInFolder(folder.folderId, folders, detailsContainer); // 상세 목록 렌더링
+                  detailsContainer.classList.remove('hidden');
+                  icon.textContent = '▼';
+              } else {
+                  // 열려 있다면 -> 닫고 내용 제거
+                  detailsContainer.classList.add('hidden');
+                  detailsContainer.innerHTML = ''; // 내용 제거로 메모리 관리
+                  icon.textContent = '▶';
+              }
+          });
+          
+          container.appendChild(folderDiv);
+      });
   }
 
 
   /**
-   * 선택된 폴더의 북마크 상세 목록을 화면의 BOOKMARK_CONTENT_AREA_ID에 렌더링합니다.
+   * 선택된 폴더의 북마크 상세 목록을 해당 폴더 요소 바로 아래에 렌더링합니다.
+   * @param {number|string} folderId - 선택된 폴더 ID
+   * @param {Array} folders - 전체 폴더 데이터
+   * @param {HTMLElement} targetContainer - 상세 목록을 삽입할 div.bookmark-details-container
    */
-  function renderBookmarksInFolder(folderId, folders) {
+  function renderBookmarksInFolder(folderId, folders, targetContainer) {
     const targetFolder = folders.find((f) => f.folderId == folderId);
-    const bookmarkContentArea = sidebar.querySelector(`#${BOOKMARK_CONTENT_AREA_ID}`);
 
-    if (!bookmarkContentArea || !targetFolder) return;
+    if (!targetContainer || !targetFolder) return;
 
-    bookmarkContentArea.innerHTML = `
-      <h4>[${targetFolder.folderName}] 북마크 목록 (${targetFolder.bookmarks.length}개)</h4>
+    targetContainer.innerHTML = `
+      <p class="details-header">총 ${targetFolder.bookmarks.length}개</p>
     `;
 
     if (targetFolder.bookmarks.length === 0) {
-      bookmarkContentArea.innerHTML += '<p class="no-bookmark-item">이 폴더에는 북마크가 없습니다.</p>';
+      targetContainer.innerHTML += '<p class="no-bookmark-item">이 폴더에는 북마크가 없습니다.</p>';
       return;
     }
 
@@ -281,7 +284,7 @@
       `;
     }).join('');
     
-    bookmarkContentArea.innerHTML += `<ul class="folder-bookmarks-list">${bookmarkListHtml}</ul>`;
+    targetContainer.innerHTML += `<ul class="folder-bookmarks-list">${bookmarkListHtml}</ul>`;
   }
 
   /**
@@ -293,7 +296,7 @@
 
     const flyoutPanel = document.createElement('div');
     flyoutPanel.id = FLYOUT_PANEL_ID;
-    flyoutPanel.classList.add('hidden'); // 기본적으로 숨김
+    flyoutPanel.classList.add('hidden'); 
 
     const folderListHtml = folders.map(folder => `
       <li class="flyout-folder-item" data-folder-id="${folder.folderId}">
@@ -312,7 +315,6 @@
         bookmarkArea.insertBefore(flyoutPanel, bookmarkArea.querySelector('.bookmark-action-bar'));
     }
 
-    // 폴더 선택 클릭 이벤트 (저장 로직)
     flyoutPanel.querySelector('.flyout-folder-list').addEventListener('click', (event) => {
       const folderItem = event.target.closest(".flyout-folder-item");
       if (folderItem) {
@@ -380,33 +382,22 @@
    * 북마크 시스템 설정 및 이벤트 핸들링 (전체 시스템 초기화 및 갱신 역할)
    */
   async function setupBookmarkSystem() {
-    // 1. 초기 데이터 로드
     const folders = await initializeBookmarks();
     
-    // 2. 폴더 목록 렌더링 (토글 기능 포함)
-    renderBookmarkFolders(folders, sidebar);
-    
-    // 3. Flyout 패널 초기 설정 (숨겨진 상태로 DOM에 추가)
+    // 2. 폴더 목록 렌더링 (개별 토글 기능 사용)
+    const folderArea = sidebar.querySelector("#bookmarkFolderArea");
+    renderFolderToggles(folders, folderArea); 
+
+    // 3. Flyout 패널 초기 설정
     setupFlyoutPanel(folders); 
     const flyoutPanel = document.getElementById(FLYOUT_PANEL_ID);
     
-    // 4. 북마크 상세 영역 DOM 준비
-    let contentArea = sidebar.querySelector(`#${BOOKMARK_CONTENT_AREA_ID}`);
-    if (!contentArea) {
-        contentArea = document.createElement('div');
-        contentArea.id = BOOKMARK_CONTENT_AREA_ID; 
-        const bookmarkArea = sidebar.querySelector('#bookmarkArea');
-        if (bookmarkArea) {
-            // bookmarkArea가 있다면, 그 아래에 상세 목록 영역 추가
-            bookmarkArea.appendChild(contentArea); 
-        }
-    }
-
+    // 4. 북마크 상세 영역 DOM 준비 (토글 방식에서는 사용하지 않음)
     // 5. saveBtn 이벤트 리스너 (Flyout 토글)
     const saveBtn = sidebar.querySelector(".saveBtn");
     if (saveBtn) {
       saveBtn.textContent = "폴더에 저장하기 ▼";
-      saveBtn.onclick = null; // 기존 리스너 제거 (중복 방지)
+      saveBtn.onclick = null;
       saveBtn.addEventListener("click", () => {
         if (flyoutPanel) {
             flyoutPanel.classList.toggle('hidden');
@@ -414,19 +405,7 @@
       });
     }
 
-    // 6. 폴더 클릭 이벤트 리스너 (목록 조회) - 이벤트 위임
-    const bookmarkListArea = sidebar.querySelector("#bookmarkFolderArea");
-    if (bookmarkListArea) {
-        bookmarkListArea.onclick = null; // 기존 리스너 제거 (중복 방지)
-        
-        bookmarkListArea.addEventListener('click', (event) => {
-            const folderItem = event.target.closest(".bookmark-folder");
-            if (folderItem) {
-                const folderId = parseInt(folderItem.dataset.folderId); 
-                renderBookmarksInFolder(folderId, folders); // 상세 목록 렌더링
-            }
-        });
-    }
+    // 6. 폴더 클릭 이벤트 리스너 (renderFolderToggles 함수 내에서 개별적으로 바인딩되므로 여기서는 제외)
 
     // 7. loadBtn 이벤트 리스너 (폴더 목록 갱신)
     const loadBtn = sidebar.querySelector(".loadBtn");
@@ -441,16 +420,16 @@
   }
 
 
-  // 6. popup.html에서 보낸 메시지 수신 및 사이드바 토글 (toggleSidebar 함수는 외부 정의 필요)
+  // 6. popup.html에서 보낸 메시지 수신 및 사이드바 토글 (외부 정의된 함수 필요)
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "toggleSidebar") {
-      // toggleSidebar(); // 외부 정의 함수 호출
+      // toggleSidebar();
     }
   });
 
   // =========================================================================
   // ⭐️ 실행 시작
   // =========================================================================
-  // runBreezeRead(); // 외부 정의 함수 호출
+  // runBreezeRead();
   setupBookmarkSystem();
 })();
