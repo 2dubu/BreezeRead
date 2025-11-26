@@ -29,7 +29,7 @@ recommend.py 기능 핵심요약
 # 가상환경 생성
 /opt/homebrew/bin/python3.12 -m venv venv
 # 프로젝트 폴더로 이동
-cd /Users/kimchaeryeong/GitHub/BreezeRead
+cd /GitHub/BreezeRead
 
 # 가상환경 활성화
 source venv/bin/activate
@@ -175,16 +175,15 @@ def get_preference_result(keywordGroups, g, ages):
 
     # 나이대별 반복
     for age in ages:
-        body_dict = {
-            "startDate": '2025-01-01',
-            "endDate": '2025-10-30',
-            "timeUnit": 'month',
-            "keywordGroups": keywordGroups,
-            "device": 'pc',
-            "gender": g,
-            "ages": [age_conv[age]]
-        }
-        body = json.dumps(body_dict)
+        body_dict={} #검색 정보를 저장할 변수
+        body_dict['startDate']='2025-01-01'
+        body_dict['endDate']='2025-10-30'
+        body_dict['timeUnit']='month'
+        body_dict['keywordGroups']=keywordGroups
+        body_dict['device']='pc'
+        body_dict['gender']=g
+        body_dict['ages']=[age]
+        body=str(body_dict).replace("'",'"')
         request = urllib.request.Request(url, data=body.encode("utf-8"))
         request.add_header("X-Naver-Client-Id", CLIENT_ID)
         request.add_header("X-Naver-Client-Secret", CLIENT_SECRET)
@@ -399,7 +398,7 @@ def recommend_news_with_age_gender(url, g, ages):
 # =========================
 if __name__ == "__main__":
     test_url = "https://n.news.naver.com/mnews/article/009/0005593794"
-    recommended = recommend_news_from_url(test_url)
+    recommended = recommend_news_with_age_gender(test_url,'m',['3','4'])
     # 🔹 키워드 출력
     print("===== 추출된 키워드 그룹 =====")
     for group in recommended["keyword_groups"]:
