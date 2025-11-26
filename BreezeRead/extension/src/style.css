@@ -268,3 +268,102 @@ hr {
   color: white;
   border: none;
 }
+
+/* 플라이아웃 패널 스타일 */
+#breezeread-folder-flyout {
+    position: absolute;
+    /* saveBtn 근처에 위치하도록 조정 */
+    bottom: 50px; 
+    right: 10px; 
+    width: 200px; /* 작은 크기 */
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 999;
+    padding: 5px 0;
+}
+
+#breezeread-folder-flyout.hidden {
+    display: none;
+}
+
+.flyout-title {
+    font-weight: bold;
+    font-size: 0.9em;
+    padding: 5px 10px;
+    margin: 0;
+    color: #555;
+    border-bottom: 1px solid #eee;
+}
+
+.flyout-folder-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.flyout-folder-item {
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: background-color 0.1s;
+    font-size: 0.85em;
+    display: flex;
+    justify-content: space-between;
+}
+
+.flyout-folder-item:hover {
+    background-color: #f0f0f0;
+}
+
+/* 북마크 상세 목록 영역 */
+#breezeread-bookmark-content {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #f7f7f7;
+    border-radius: 4px;
+    max-height: 250px; /* 스크롤 가능하도록 높이 제한 */
+    overflow-y: auto;
+}
+
+#breezeread-bookmark-content h4 {
+    font-size: 1em;
+    margin-top: 0;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.folder-bookmarks-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.folder-bookmark-item {
+    padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+}
+
+.folder-bookmark-item:last-child {
+    border-bottom: none;
+}
+
+.folder-bookmark-item a {
+    text-decoration: none;
+    color: #444;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8em;
+}
+
+.bookmark-date {
+    font-size: 0.9em;
+    color: #888;
+}
+
+.bookmark-title {
+    max-width: 70%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
