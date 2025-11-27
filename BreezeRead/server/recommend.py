@@ -313,12 +313,15 @@ def recommend_news_from_url(url: str):
     res = hc.getresponse()
     resBody = res.read()
     hc.close()
-    items = list(fromstring(resBody).iter("item"))[:3]
+    items = list(fromstring(resBody).iter("item"))[:4]
 
     news_objects = []
     for n in items:
-        title = StringCleaner.clean(n.find("title").text)
         link = StringCleaner.clean(n.find("link").text)
+        # 2. 🚨 필터링 로직: 원본 URL과 검색된 뉴스의 링크가 같은지 비교
+        if link == url:
+            continue  # 원본 URL과 같으면 이 뉴스를 건너뛰고 다음 뉴스를 확인합니다.
+        title = StringCleaner.clean(n.find("title").text)
         thumbnail = extract_thumbnail(link)
         news_objects.append(NewsArticle(title, link, thumbnail))
 
@@ -370,20 +373,24 @@ def recommend_news_with_age_gender(url, g, ages):
     resBody = res.read()
     hc.close()
 
-    items = list(fromstring(resBody).iter("item"))[:3]
+    items = list(fromstring(resBody).iter("item"))[:4]
         # Error handling for HTTP status and XML parsing
     if res.status != 200:
         return []
     try:
-        items = list(fromstring(resBody).iter("item"))[:3]
+        items = list(fromstring(resBody).iter("item"))[:4]
     except Exception:
         return []
 
     # 6️⃣ NewsArticle 객체 생성
     news_objects = []
     for n in items:
-        title = StringCleaner.clean(n.find("title").text)
         link = StringCleaner.clean(n.find("link").text)
+        if link == url:
+            # 원본 기사이면 다음 아이템으로 넘어갑니다.
+            continue
+        # 필터링 통과시
+        title = StringCleaner.clean(n.find("title").text)
         thumbnail = extract_thumbnail(link)
         news_objects.append(NewsArticle(title, link, thumbnail))  # NewsArticle 사용
 
