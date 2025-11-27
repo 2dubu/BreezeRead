@@ -17,9 +17,7 @@
   },
   "permissions": [
     "scripting", 
-    "storage",
-    "cookies",
-    "tabs"
+    "storage"
   ],
   "host_permissions": [
     "https://news.naver.com/*",
