@@ -316,7 +316,7 @@ def recommend_news_from_url(url: str):
     res = hc.getresponse()
     resBody = res.read()
     hc.close()
-    items = list(fromstring(resBody).iter("item"))[:10]
+    items = list(fromstring(resBody).iter("item"))[:150]
 
     news_objects = []
     for n in items:
@@ -384,13 +384,11 @@ def recommend_news_with_age_gender(url, g, ages):
     res = hc.getresponse()
     resBody = res.read()
     hc.close()
-
-    items = list(fromstring(resBody).iter("item"))[:20]
     # Error handling for HTTP status and XML parsing
     if res.status != 200:
         return []
     try:
-        items = list(fromstring(resBody).iter("item"))[:20]
+        items = list(fromstring(resBody).iter("item"))[:100]
     except Exception:
         return {"keyword_groups": [], "news": []}
 
@@ -422,7 +420,7 @@ def recommend_news_with_age_gender(url, g, ages):
 if __name__ == "__main__":
     # 테스트에 사용할 네이버 뉴스 URL
     # 원본 URL과 겹치지 않게 필터링되는지 확인하기 좋은 URL을 사용합니다.
-    test_url = "https://n.news.naver.com/mnews/article/009/0005593794"
+    test_url = "https://n.news.naver.com/article/082/0001355919?sid=101"
     
     
     # -----------------------------------------------------
