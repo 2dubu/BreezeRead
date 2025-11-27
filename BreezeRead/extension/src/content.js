@@ -417,13 +417,6 @@
   }
 
 
-  // 6. popup.html에서 보낸 메시지 수신 및 사이드바 토글 (외부 정의된 함수 필요)
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === "toggleSidebar") {
-      // toggleSidebar();
-    }
-  });
-
   // =========================================================================
   // ⭐️ 실행 시작
   // =========================================================================
