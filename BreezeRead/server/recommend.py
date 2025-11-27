@@ -61,7 +61,10 @@ NAVER_CLIENT_SECRET = os.environ.get("NAVER_CLIENT_SECRET")
 
 if not CLIENT_ID or not CLIENT_SECRET or not NAVER_CLIENT_ID or not NAVER_CLIENT_SECRET:
     raise EnvironmentError("필수 CLIENT_ID/SECRET 환경변수가 설정되어야 합니다.")
-
+NAVER_NEWS_DOMAINS = [
+    "https://news.naver.com/",
+    "https://n.news.naver.com/"
+]
 # =========================
 # 1️⃣ 뉴스 본문 크롤링
 # =========================
@@ -313,7 +316,7 @@ def recommend_news_from_url(url: str):
     res = hc.getresponse()
     resBody = res.read()
     hc.close()
-    items = list(fromstring(resBody).iter("item"))[:4]
+    items = list(fromstring(resBody).iter("item"))[:10]
 
     news_objects = []
     for n in items:
@@ -321,6 +324,9 @@ def recommend_news_from_url(url: str):
         # 2. 🚨 필터링 로직: 원본 URL과 검색된 뉴스의 링크가 같은지 비교
         if link == url:
             continue  # 원본 URL과 같으면 이 뉴스를 건너뛰고 다음 뉴스를 확인합니다.
+        is_naver_news = any(link.startswith(domain) for domain in NAVER_NEWS_DOMAINS)
+        if not is_naver_news:
+            continue
         title = StringCleaner.clean(n.find("title").text)
         thumbnail = extract_thumbnail(link)
         news_objects.append(NewsArticle(title, link, thumbnail))
@@ -373,12 +379,12 @@ def recommend_news_with_age_gender(url, g, ages):
     resBody = res.read()
     hc.close()
 
-    items = list(fromstring(resBody).iter("item"))[:4]
+    items = list(fromstring(resBody).iter("item"))[:20]
         # Error handling for HTTP status and XML parsing
     if res.status != 200:
         return []
     try:
-        items = list(fromstring(resBody).iter("item"))[:4]
+        items = list(fromstring(resBody).iter("item"))[:20]
     except Exception:
         return []
 
@@ -388,6 +394,10 @@ def recommend_news_with_age_gender(url, g, ages):
         link = StringCleaner.clean(n.find("link").text)
         if link == url:
             # 원본 기사이면 다음 아이템으로 넘어갑니다.
+            continue
+        # 🚨 필터링 2: 네이버 뉴스 도메인으로 시작하는지 확인
+        is_naver_news = any(link.startswith(domain) for domain in NAVER_NEWS_DOMAINS)
+        if not is_naver_news:
             continue
         # 필터링 통과시
         title = StringCleaner.clean(n.find("title").text)
@@ -404,16 +414,51 @@ def recommend_news_with_age_gender(url, g, ages):
 # CLI 테스트용
 # =========================
 if __name__ == "__main__":
+    # 테스트에 사용할 네이버 뉴스 URL
+    # 원본 URL과 겹치지 않게 필터링되는지 확인하기 좋은 URL을 사용합니다.
     test_url = "https://n.news.naver.com/mnews/article/009/0005593794"
-    recommended = recommend_news_with_age_gender(test_url,'m',['3','4'])
+    
+    
+    # -----------------------------------------------------
+    # 🚀 1. recommend_news_with_age_gender (성별/연령 기반 추천) 테스트
+    # -----------------------------------------------------
+    print("=" * 60)
+    print("🚀 1. 성별/연령 기반 뉴스 추천 (recommend_news_with_age_gender) 테스트")
+    print("=" * 60)
+    
+    recommended_age_gender = recommend_news_with_age_gender(test_url, 'm', ['3','4'])
+    
     # 🔹 키워드 출력
-    print("===== 추출된 키워드 그룹 =====")
-    for group in recommended["keyword_groups"]:
+    print("\n===== 추출된 키워드 그룹 (Age/Gender) =====")
+    for group in recommended_age_gender["keyword_groups"]:
         print(f"{group['groupName']} : {group['keywords']}")
 
     # 🔹 뉴스 출력
-    print("\n===== 추천 뉴스 =====")
-    for news in recommended["news"]:
+    print("\n===== 추천 뉴스 (Age/Gender) =====")
+    for news in recommended_age_gender["news"]:
+        print(f"제목: {news.title}")
+        print(f"링크: {news.link}")
+        print(f"썸네일: {news.thumbnail}")
+        print("-" * 50)
+        
+        
+    # -----------------------------------------------------
+    # 🚀 2. recommend_news_from_url (일반 키워드 기반 추천) 테스트
+    # -----------------------------------------------------
+    print("\n" + "=" * 60)
+    print("🚀 2. 일반 키워드 기반 뉴스 추천 (recommend_news_from_url) 테스트")
+    print("=" * 60)
+    
+    recommended_general = recommend_news_from_url(test_url)
+    
+    # 🔹 키워드 출력
+    print("\n===== 추출된 키워드 그룹 (General) =====")
+    for group in recommended_general["keyword_groups"]:
+        print(f"{group['groupName']} : {group['keywords']}")
+
+    # 🔹 뉴스 출력
+    print("\n===== 추천 뉴스 (General) =====")
+    for news in recommended_general["news"]:
         print(f"제목: {news.title}")
         print(f"링크: {news.link}")
         print(f"썸네일: {news.thumbnail}")
