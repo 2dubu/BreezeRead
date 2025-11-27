@@ -386,7 +386,7 @@ def recommend_news_with_age_gender(url, g, ages):
     try:
         items = list(fromstring(resBody).iter("item"))[:20]
     except Exception:
-        return []
+        return {"keyword_groups": [], "news": []}
 
     # 6️⃣ NewsArticle 객체 생성
     news_objects = []
