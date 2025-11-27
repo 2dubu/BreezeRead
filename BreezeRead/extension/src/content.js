@@ -9,7 +9,6 @@
   const CHEVRON_LEFT = chrome.runtime.getURL("assets/chevron-left.png");
 // ⭐️ 북마크 시스템 관련 상수
   const FLYOUT_PANEL_ID = "breezeread-folder-flyout";
-  const BOOKMARK_CONTENT_AREA_ID = "bookmarkContentArea";
   const INITIAL_BOOKMARK_DATA = [
   { folderId: 1, folderName: "경제", bookmarks: [] },
   { folderId: 2, folderName: "IT/기술", bookmarks: [] },
