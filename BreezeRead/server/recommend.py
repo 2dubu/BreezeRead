@@ -320,14 +320,20 @@ def recommend_news_from_url(url: str):
 
     news_objects = []
     for n in items:
-        link = StringCleaner.clean(n.find("link").text)
+        link_element = n.find("link")
+        if link_element is None or link_element.text is None:
+            continue
+        link = StringCleaner.clean(link_element.text)
         # 2. 🚨 필터링 로직: 원본 URL과 검색된 뉴스의 링크가 같은지 비교
         if link == url:
             continue  # 원본 URL과 같으면 이 뉴스를 건너뛰고 다음 뉴스를 확인합니다.
         is_naver_news = any(link.startswith(domain) for domain in NAVER_NEWS_DOMAINS)
         if not is_naver_news:
             continue
-        title = StringCleaner.clean(n.find("title").text)
+        title_element = n.find("title")
+        if title_element is None or title_element.text is None:
+            continue
+        title = StringCleaner.clean(title_element.text)
         thumbnail = extract_thumbnail(link)
         news_objects.append(NewsArticle(title, link, thumbnail))
 
