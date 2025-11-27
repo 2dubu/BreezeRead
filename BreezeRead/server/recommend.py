@@ -386,7 +386,7 @@ def recommend_news_with_age_gender(url, g, ages):
     hc.close()
 
     items = list(fromstring(resBody).iter("item"))[:20]
-        # Error handling for HTTP status and XML parsing
+    # Error handling for HTTP status and XML parsing
     if res.status != 200:
         return []
     try:
