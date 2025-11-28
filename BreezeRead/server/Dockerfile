@@ -6,8 +6,19 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PIP_DEFAULT_TIMEOUT=100
 
+# 2-1. JAVA_HOME 환경변수 설정
+ENV JAVA_HOME="/usr/lib/jvm/default-java"
 # 3. 작업 디렉토리 설정
 WORKDIR /app
+
+# 3-1. 시스템 패키지 설치 (Java 및 컴파일러)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    default-jdk-headless \
+    g++ \
+    gcc \
+    libc6-dev && \
+    rm -rf /var/lib/apt/lists/*
 
 # 4. 의존성 먼저 설치 (캐시 활용)
 COPY requirements.txt .

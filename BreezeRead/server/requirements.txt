@@ -7,3 +7,7 @@ scikit-learn==1.5.2
 networkx==3.2.1
 kss==6.0.4
 requests==2.32.3
+konlpy==0.6.0
+JPype1==1.6.0
+pandas==2.3.3
+python-dotenv==1.1.0
