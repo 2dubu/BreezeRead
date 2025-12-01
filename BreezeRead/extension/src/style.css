@@ -1,7 +1,7 @@
 /* style.css */
 
 :root {
-  --sidebar-width: 190px;
+  --sidebar-width: 240px;
   --sidebar-height: 100vh;
   --surface-bg: #f7f7f7;
   --sidebar-bg: #fcfcfc;
@@ -77,6 +77,26 @@
   width: 16px;
   height: 16px;
   object-fit: contain;
+}
+
+/* 토글 버튼 우측 readTime */
+#breezeread-time-badge {
+  position: absolute;
+  top: var(--toggle-top);
+  left: calc(var(--sidebar-width) + var(--toggle-size) + 8px);
+  height: var(--toggle-size);
+  padding: 0 10px;
+  color: #111111;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: var(--font-family);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  box-shadow: var(--box-shadow);
+  z-index: 10000;
+  white-space: nowrap;
 }
 
 /* 4. 'collapsed' 상태일 때 컨테이너를 왼쪽으로 이동하여 숨김 */
@@ -185,6 +205,15 @@ hr {
   font-size: 0.95em;
 }
 
+.summary-sentence {
+  margin: 0 0 12px 0;
+  line-height: 1.5;
+  font-size: 0.95em;
+}
+.summary-sentence:last-child {
+  margin-bottom: 0;
+}
+
 /* 3. 핵심 키워드 */
 .keyword-tag {
   display: inline-block;
@@ -271,123 +300,123 @@ hr {
 
 /* 플라이아웃 패널 스타일 */
 #breezeread-folder-flyout {
-    position: absolute;
-    /* saveBtn 근처에 위치하도록 조정 */
-    bottom: 50px; 
-    right: 10px; 
-    width: 200px; /* 작은 크기 */
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    z-index: 999;
-    padding: 5px 0;
+  position: absolute;
+  /* saveBtn 근처에 위치하도록 조정 */
+  bottom: 50px;
+  right: 10px;
+  width: 200px; /* 작은 크기 */
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 999;
+  padding: 5px 0;
 }
 /* 폴더 목록을 기본적으로 숨기는 CSS */
 .folder-list-hidden {
-    display: none;
+  display: none;
 }
 #breezeread-folder-flyout.hidden {
-    display: none;
+  display: none;
 }
 
 .flyout-title {
-    font-weight: bold;
-    font-size: 0.9em;
-    padding: 5px 10px;
-    margin: 0;
-    color: #555;
-    border-bottom: 1px solid #eee;
+  font-weight: bold;
+  font-size: 0.9em;
+  padding: 5px 10px;
+  margin: 0;
+  color: #555;
+  border-bottom: 1px solid #eee;
 }
 
 .flyout-folder-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .flyout-folder-item {
-    padding: 8px 10px;
-    cursor: pointer;
-    transition: background-color 0.1s;
-    font-size: 0.85em;
-    display: flex;
-    justify-content: space-between;
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: background-color 0.1s;
+  font-size: 0.85em;
+  display: flex;
+  justify-content: space-between;
 }
 
 .flyout-folder-item:hover {
-    background-color: #f0f0f0;
+  background-color: #f0f0f0;
 }
 
 /* 북마크 상세 목록 영역 */
 #breezeread-bookmark-content {
-    margin-top: 15px;
-    padding: 10px;
-    background-color: #f7f7f7;
-    border-radius: 4px;
-    max-height: 250px; /* 스크롤 가능하도록 높이 제한 */
-    overflow-y: auto;
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #f7f7f7;
+  border-radius: 4px;
+  max-height: 250px; /* 스크롤 가능하도록 높이 제한 */
+  overflow-y: auto;
 }
 
 #breezeread-bookmark-content h4 {
-    font-size: 1em;
-    margin-top: 0;
-    margin-bottom: 8px;
-    color: #333;
+  font-size: 1em;
+  margin-top: 0;
+  margin-bottom: 8px;
+  color: #333;
 }
 
 .folder-bookmarks-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .folder-bookmark-item {
-    padding: 5px 0;
-    border-bottom: 1px dashed #ddd;
+  padding: 5px 0;
+  border-bottom: 1px dashed #ddd;
 }
 
 .folder-bookmark-item:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 .folder-bookmark-item a {
-    text-decoration: none;
-    color: #444;
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.8em;
+  text-decoration: none;
+  color: #444;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8em;
 }
 
 .bookmark-date {
-    font-size: 0.9em;
-    color: #888;
+  font-size: 0.9em;
+  color: #888;
 }
 
 .bookmark-title {
-    max-width: 70%;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+  max-width: 70%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 /* 숨김 처리 CSS */
 .bookmark-details-container.hidden {
-    display: none;
+  display: none;
 }
 
 /* 토글 버튼 디자인 개선 (선택 사항) */
 .bookmark-folder-item {
-    border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #eee;
 }
 .folder-toggle-btn {
-    width: 100%;
-    text-align: left;
-    background: none;
-    border: none;
-    padding: 8px 10px;
-    cursor: pointer;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 8px 10px;
+  cursor: pointer;
 }
 .toggle-icon {
-    float: right;
-    margin-left: 5px;
+  float: right;
+  margin-left: 5px;
 }
