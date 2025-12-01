@@ -571,11 +571,11 @@ async function fetchDefaultRecommend(articleUrl) {
 }
 
 // 2. filter 있는 fetchSummary 함수 (맞춤형 요약)
-async function fetchRecommendWithUserData(articleUrl, gender, ages) {
+async function fetchRecommendWithUserData(articleUrl, gender, agesList) {
     const res = await fetch(`${API_BASE}/recommend/age-gender`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: articleUrl, gender: gender, age: ages }), 
+        body: JSON.stringify({ url: articleUrl, gender: gender, agesList: agesList }), 
     });
 
     if (!res.ok) {
@@ -602,21 +602,21 @@ function getUserFilter() {
  */
 async function getFilter(currentArticleUrl) {
     console.log("필터 및 요약 시스템 시작");
-    
+    const userFilter = await getUserFilter();
+
     try {
-        const userFilter = await getUserFilter();
         let recommendData;
 
-        if (userFilter) {
+        if (userFilter != null) {
             console.log("✅ userFilter 존재:", userFilter);
             
             const gender = userFilter.gender;
-            const ages = userFilter.age; 
+            const agesList = [userFilter.age];
             
-            console.log(`API에 전송: Gender: ${gender}, Age: ${ages}`);
+            console.log(`API에 전송: Gender: ${gender}, Age: ${agesList[0]}`);
             
             // fetchRecommendWithUserData 호출 및 데이터 수신 (필터 O)
-            recommendData = await fetchRecommendWithUserData(currentArticleUrl, gender, ages); 
+            recommendData = await fetchRecommendWithUserData(currentArticleUrl, gender, agesList); 
             console.log("🎉 맞춤형 요약 정보 로드 성공");
         } else {
             console.log("❌ userFilter 없음.");
@@ -655,9 +655,6 @@ async function recommend() {
 }
 
   recommend(); // 이 함수를 호출해야 실행됩니다.
-  // =========================================================================
-  // ⭐️ 실행 시작
-  // =========================================================================
   loadReadTimeOnEnter();
   setupBookmarkSystem();
 })();

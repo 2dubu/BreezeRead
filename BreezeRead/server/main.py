@@ -56,7 +56,7 @@ class UrlRecommendRequest(BaseModel):
 class RecommendRequest(BaseModel):
     url: str
     gender: str # 'm' 또는 'f'
-    age: str
+    agesList: list[str]
 
 # 1) read_time
 @app.post("/readtime/url")
@@ -132,9 +132,9 @@ def recommend_age_gender(
     """
     
     # request 객체에서 데이터를 추출하여 사용합니다.
-    ages_list = request.age.split(",")  # '3,4' → ['3','4']
+    ages_list = request.agesList
     news_objs = recommend_news_with_age_gender(request.url, request.gender, ages_list)
-    
+        
     return RecommendResponse(
         keyword_groups=news_objs["keyword_groups"],
         results=[NewsResponse(
