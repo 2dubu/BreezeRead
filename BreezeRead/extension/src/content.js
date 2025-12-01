@@ -178,7 +178,7 @@ async function loadReadTimeOnEnter() {
     const isCollapsed = container.classList.toggle("collapsed");
     toggleIcon.src = isCollapsed ? CHEVRON_RIGHT : CHEVRON_LEFT;
 
-    if(!isCollapsed){
+    if (!isCollapsed){
       runBreezeRead();
     }
   };
