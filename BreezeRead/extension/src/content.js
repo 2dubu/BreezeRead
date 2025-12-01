@@ -416,10 +416,64 @@
     }
   }
 
+// =========================================================================
+// 📁 성별/ 연령별 정보 입력하기 
+// =========================================================================
+// =========================================================================
+// ⚙️ 5. 시스템 초기화 및 이벤트 바인딩 (참고 문법)
+// =========================================================================
 
-  // =========================================================================
-  // ⭐️ 실행 시작
-  // =========================================================================
+// 설정 패널
+const settingsBtn = document.getElementById("settingsBtn");
+const filterPanel = document.querySelector(".section-panel-filterPanel");
+
+// 닫기 버튼
+const closePanelBtn = document.getElementById("closePanelBtn");
+
+// 1) 설정 버튼 클릭 → 토글
+settingsBtn.addEventListener("click", (e) => {
+  e.stopPropagation(); // 이벤트 버블링 방지
+  filterPanel.classList.toggle("hidden");
+});
+
+// 2) 닫기 버튼 클릭 → 패널 숨김
+closePanelBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  filterPanel.classList.add("hidden");
+});
+
+// 3) 패널 외부 클릭시 자동 닫기
+document.addEventListener("click", (e) => {
+  if (!filterPanel.contains(e.target) && e.target !== settingsBtn) {
+    filterPanel.classList.add("hidden");
+  }
+});
+
+// 연령/성별 적용버튼 
+document.getElementById("applyFilterBtn").addEventListener("click", () => {
+    
+    // 🔹 선택된 성별 가져오기
+    const genderInput = document.querySelector("input[name='gender']:checked");
+    const gender = genderInput ? genderInput.value : "";
+
+    // 🔹 선택된 연령대 가져오기
+    const age = document.getElementById("ageGroup").value;
+
+    // 🔹 저장할 데이터 형태
+    const userFilter = {
+        gender: gender,
+        age: age
+    };
+
+    // 🔹 storage에 저장
+    chrome.storage.local.set({ userFilter }, () => {
+        console.log("사용자 필터 저장 완료:", userFilter);
+        alert("필터가 저장되었습니다!");
+    });
+});
+
+
+
   runBreezeRead();
   setupBookmarkSystem();
 })();

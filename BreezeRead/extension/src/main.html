@@ -14,8 +14,49 @@
       <img src="../assets/setting.png" alt="설정" />
     </button>
   </div>
-
+  
   <div class="sidebar-content-area">
+    <div class="section-panel-filterPanel hidden">
+        <div class="panel-header">
+            <h3>추천 필터 설정</h3>
+            <button id="closePanelBtn" aria-label="닫기">
+                <span class="close-icon">&times;</span>
+            </button>
+        </div>
+
+        <div class="panel-content">
+            <div class="filter-group">
+                <label>성별:</label>
+                <div class="gender-selection">
+                    <input type="radio" id="genderMale" name="gender" value="male">
+                    <label for="genderMale">남</label>
+                    <input type="radio" id="genderFemale" name="gender" value="female">
+                    <label for="genderFemale">여</label>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label for="ageGroup">연령대:</label>
+                <select id="ageGroup">
+                    <option value="">선택 안 함</option>
+                    <option value="1">0~12세</option>
+                    <option value="2">13~18세</option>
+                    <option value="3">19~24세</option>
+                    <option value="4">25~29세</option>
+                    <option value="5">30~34세</option>
+                    <option value="6">35~39세</option>
+                    <option value="7">40~44세</option>
+                    <option value="8">45~49세</option>
+                    <option value="9">50~54세</option>
+                    <option value="10">55~59세</option>
+                    <option value="11">60세 이상</option>
+                </select>
+            </div>
+
+            <button id="applyFilterBtn">필터 적용</button>
+        </div>
+    </div>
+
     <div class="section-panel time-prediction">
       <div class="section-title">예상 소요 시간</div>
       <div id="readTime">
@@ -83,6 +124,6 @@
         </div>
       </div>
     </div>
-  </div>
+    
 </body>
 </html>
