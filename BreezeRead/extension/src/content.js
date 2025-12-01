@@ -107,27 +107,27 @@
   }
 
   // read_time 호출
-async function loadReadTimeOnEnter() {
-  if (isReadTimeLoaded) return;
+  async function loadReadTimeOnEnter() {
+    if (isReadTimeLoaded) return;
 
-  const articleUrl = window.location.href;
-  const readTimeContainer = sidebar.querySelector("#readTime");
-  const readTimeValue = readTimeContainer?.querySelector(".time-value");
+    const articleUrl = window.location.href;
+    const readTimeContainer = sidebar.querySelector("#readTime");
+    const readTimeValue = readTimeContainer?.querySelector(".time-value");
 
-  if (!readTimeValue) return;
+    if (!readTimeValue) return;
 
-  readTimeValue.textContent = "계산 중...";
+    readTimeValue.textContent = "계산 중...";
 
-  try {
-    const readTimeMin = await fetchReadTime(articleUrl);
-    // "1분", "10분" 이렇게 표기
-    readTimeValue.textContent = `${readTimeMin}분`;
-    isReadTimeLoaded = true;
-  } catch (e) {
-    console.error("read_time 호출 오류:", e);
-    readTimeValue.textContent = "오류";
+    try {
+      const readTimeMin = await fetchReadTime(articleUrl);
+      // "1분", "10분" 이렇게 표기
+      readTimeValue.textContent = `${readTimeMin}분`;
+      isReadTimeLoaded = true;
+    } catch (e) {
+      console.error("read_time 호출 오류:", e);
+      readTimeValue.textContent = "오류";
+    }
   }
-}
 
   // UI에 읽기 시간 + 요약 반영하기
   async function runBreezeRead() {
@@ -178,7 +178,7 @@ async function loadReadTimeOnEnter() {
     const isCollapsed = container.classList.toggle("collapsed");
     toggleIcon.src = isCollapsed ? CHEVRON_RIGHT : CHEVRON_LEFT;
 
-    if(!isCollapsed){
+    if (!isCollapsed){
       runBreezeRead();
     }
   };
