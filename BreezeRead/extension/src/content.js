@@ -128,6 +128,40 @@
       // 토글 버튼 우측에 반영
       readTimeBadge.textContent = `${readTimeMin}분`;
 
+      // 읽기 추천 메시지 반영 (랜덤 선택)
+      const readRecommend = readTimeContainer?.querySelector(".read-recommend");
+      if (readRecommend) {
+        const shortMessages = [
+          "⏰ 짧은 틈에 딱 좋아요",
+          "🚀 금방 읽을 수 있는 글이에요",
+          "📖 빠르게 훑어볼만한 글이에요",
+        ];
+        const mediumMessages = [
+          "🚶 산책하며 읽기 좋아요",
+          "🌟 여유롭게 읽어보세요",
+          "🌿 편하게 읽기 좋은 글이에요",
+          "☕ 커피 한 잔과 함께 읽어봐요",
+        ];
+        const longMessages = [
+          "🛋️ 소파에서 여유롭게 읽어봐요",
+          "📚 깊이 있게 읽어봐요",
+          "🏠 집에서 편하게 읽어봐요",
+          "🍿 간식과 함께 천천히 읽어봐요",
+        ];
+
+        let messages;
+        if (readTimeMin <= 3) {
+          messages = shortMessages;
+        } else if (readTimeMin <= 7) {
+          messages = mediumMessages;
+        } else {
+          messages = longMessages;
+        }
+        const randomMessage =
+          messages[Math.floor(Math.random() * messages.length)];
+        readRecommend.textContent = randomMessage;
+      }
+
       // 요약 UI 반영
       if (summaryArea) {
         const sentences = summary?.sentences || [];

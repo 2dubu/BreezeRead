@@ -28,6 +28,7 @@
   --bookmark-control-size: 30px;
   --bookmark-radius: 50%;
   --accent-color: #1890ff;
+  --black: #111111;
 }
 
 /* 1. 최상위 컨테이너: 사이드바와 토글 버튼을 포함하며 화면에 고정 */
@@ -86,7 +87,8 @@
   left: calc(var(--sidebar-width) + var(--toggle-size) + 8px);
   height: var(--toggle-size);
   padding: 0 10px;
-  color: #111111;
+  color: var(--black);
+  color: var(--black);
   font-size: 12px;
   font-weight: bold;
   font-family: var(--font-family);
@@ -186,9 +188,20 @@ hr {
 }
 
 /* 1. 소요 시간 */
+#readTime {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .time-value {
   font-size: 1.1em;
   font-weight: bold;
+}
+
+.read-recommend {
+  font-size: 0.85em;
+  color: var(--black);
 }
 .difficulty-level {
   color: #f4b400; /* 예시 색상 */
