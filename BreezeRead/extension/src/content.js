@@ -664,8 +664,71 @@ async function recommend() {
     }
 }
 
+/**
+ * 추천 데이터 렌더링 함수 (선택 키워드 + 뉴스 반복)
+ * @param {Object} recommendData API에서 받아온 추천 데이터
+ */
+function renderRecommendation(recommendData) {
+    // 🔹 키워드 영역 초기화
+    const keywordArea = document.getElementById("keywordArea");
+    keywordArea.innerHTML = "";
+
+    // 🔹 키워드 직접 추가
+    const kw1 = recommendData.keyword_groups[0].groupName[0];
+    const kw2 = recommendData.keyword_groups[0].keywords[0];
+    const kw3 = recommendData.keyword_groups[0].keywords[1];
 
 
+
+    [kw1, kw2, kw3].forEach(kw => {
+    const span = document.createElement("span");
+    span.className = "keyword-tag";
+    span.textContent = kw ? `#${kw}` : "";
+    keywordArea.appendChild(span);
+});
+
+
+    // 🔹 뉴스 추천 영역 초기화
+    const recommendationArea = document.getElementById("recommendationArea");
+    recommendationArea.innerHTML = "";
+
+    if (recommendData.results && recommendData.results.length > 0) {
+        recommendData.results.forEach(news => {
+            const newsDiv = document.createElement("div");
+            newsDiv.className = "news-item";
+
+            const img = document.createElement("img");
+            img.src = news.thumbnail || "";
+            img.alt = "뉴스 썸네일";
+
+            const p = document.createElement("p");
+            p.textContent = news.title;
+
+            // 클릭 시 새 탭으로 링크 열기
+            newsDiv.addEventListener("click", () => {
+                window.open(news.link, "_blank");
+            });
+
+            newsDiv.appendChild(img);
+            newsDiv.appendChild(p);
+            recommendationArea.appendChild(newsDiv);
+        });
+    }
+}
+
+// 🔹 예시: API에서 받아온 데이터 렌더링
+async function initRecommendation() {
+    const currentArticleUrl = window.location.href;
+
+    try {
+        const recommendData = await getFilter(currentArticleUrl);
+        renderRecommendation(recommendData);
+    } catch (err) {
+        console.error("추천 데이터 로드 실패:", err);
+    }
+}
+
+  // initRecommendation();
   recommend(); // 이 함수를 호출해야 실행됩니다.
   loadReadTimeAtInitialized();
   setupBookmarkSystem();
