@@ -554,7 +554,7 @@ document.getElementById("applyFilterBtn").addEventListener("click", () => {
     // 🔹 저장할 데이터 형태
     const userFilter = {
         gender: gender,
-        age: age
+        agesList: age ? [age] : [] 
     };
 
     // 🔹 storage에 저장

@@ -430,7 +430,7 @@ if __name__ == "__main__":
     print("🚀 1. 성별/연령 기반 뉴스 추천 (recommend_news_with_age_gender) 테스트")
     print("=" * 60)
     
-    recommended_age_gender = recommend_news_with_age_gender(test_url, 'm', ['3','4'])
+    recommended_age_gender = recommend_news_with_age_gender(test_url, 'm', ['4'])
     
     # 🔹 키워드 출력
     print("\n===== 추출된 키워드 그룹 (Age/Gender) =====")
