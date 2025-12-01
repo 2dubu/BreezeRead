@@ -107,7 +107,7 @@
   }
 
   // read_time 호출
-  async function loadReadTimeOnEnter() {
+  async function loadReadTimeAtInitialized() {
     if (isReadTimeLoaded) return;
 
     const articleUrl = window.location.href;
@@ -122,6 +122,9 @@
       const readTimeMin = await fetchReadTime(articleUrl);
       // "1분", "10분" 이렇게 표기
       readTimeValue.textContent = `${readTimeMin}분`;
+      // 토글 버튼 우측 배지에 반영
+      const badge = document.getElementById("breezeread-time-badge");
+      if (badge) badge.textContent = `${readTimeMin}분`;
       isReadTimeLoaded = true;
     } catch (e) {
       console.error("read_time 호출 오류:", e);
@@ -134,15 +137,22 @@
     if (isSummaryLoaded) return;
     const articleUrl = window.location.href;
     const summaryArea = sidebar.querySelector("#summaryArea");
+    const readTimeContainer = sidebar.querySelector("#readTime");
+    const readTimeValue = readTimeContainer?.querySelector(".time-value");
 
     // 로딩 상태 표시
     if (summaryArea) summaryArea.textContent = "요약 생성 중...";
 
     try {
-      const summary = await fetchSummary(articleUrl);
+      const [readTimeMin, summary] = await Promise.all([
+        fetchReadTime(articleUrl),
+        fetchSummary(articleUrl),
+      ]);
 
-      // 토글 버튼 우측에 반영
-      readTimeBadge.textContent = `${readTimeMin}분`;
+      // 읽기 시간 UI 반영
+      if (readTimeValue) {
+        readTimeValue.textContent = `${readTimeMin}분`;
+      }
 
       // 읽기 추천 메시지 반영 (랜덤 선택)
       const readRecommend = readTimeContainer?.querySelector(".read-recommend");
@@ -655,6 +665,9 @@ async function recommend() {
 }
 
   recommend(); // 이 함수를 호출해야 실행됩니다.
-  loadReadTimeOnEnter();
+  // =========================================================================
+  // ⭐️ 실행 시작
+  // =========================================================================
+  loadReadTimeAtInitialized();
   setupBookmarkSystem();
 })();
