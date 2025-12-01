@@ -139,15 +139,8 @@
     if (summaryArea) summaryArea.textContent = "요약 생성 중...";
 
     try {
-      const [readTimeMin, summary] = await Promise.all([
-        fetchReadTime(articleUrl),
-        fetchSummary(articleUrl),
-      ]);
+      const summary = await fetchSummary(articleUrl);
 
-      // 읽기 시간 UI 반영
-      if (readTimeValue) {
-        readTimeValue.textContent = `${readTimeMin}분`;
-      }
       // 토글 버튼 우측에 반영
       readTimeBadge.textContent = `${readTimeMin}분`;
 
@@ -184,7 +177,6 @@
           messages[Math.floor(Math.random() * messages.length)];
         readRecommend.textContent = randomMessage;
       }
-      const summary = await fetchSummary(articleUrl);
 
       // 요약 UI 반영
       if (summaryArea) {
@@ -229,7 +221,7 @@
     const isCollapsed = container.classList.toggle("collapsed");
     toggleIcon.src = isCollapsed ? CHEVRON_RIGHT : CHEVRON_LEFT;
 
-    if (!isCollapsed){
+    if (!isCollapsed) {
       runBreezeRead();
     }
   };
