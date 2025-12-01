@@ -21,6 +21,9 @@
   // ⭐️ [수정]: 최상위 컨테이너 ID를 기준으로 중복 실행 방지
   if (document.getElementById(CONTAINER_ID)) return;
 
+  let isReadTimeLoaded = false;
+  let isSummaryLoaded = false;
+
   // HTML 및 CSS 가져오기
   const [htmlRes, cssRes] = await Promise.all([
     fetch(chrome.runtime.getURL("src/main.html")),
@@ -103,16 +106,36 @@
     return data;
   }
 
-  // UI에 읽기 시간 + 요약 반영하기
-  async function runBreezeRead() {
-    const articleUrl = window.location.href;
+  // read_time 호출
+  async function loadReadTimeOnEnter() {
+    if (isReadTimeLoaded) return;
 
+    const articleUrl = window.location.href;
     const readTimeContainer = sidebar.querySelector("#readTime");
     const readTimeValue = readTimeContainer?.querySelector(".time-value");
+
+    if (!readTimeValue) return;
+
+    readTimeValue.textContent = "계산 중...";
+
+    try {
+      const readTimeMin = await fetchReadTime(articleUrl);
+      // "1분", "10분" 이렇게 표기
+      readTimeValue.textContent = `${readTimeMin}분`;
+      isReadTimeLoaded = true;
+    } catch (e) {
+      console.error("read_time 호출 오류:", e);
+      readTimeValue.textContent = "오류";
+    }
+  }
+
+  // UI에 읽기 시간 + 요약 반영하기
+  async function runBreezeRead() {
+    if (isSummaryLoaded) return;
+    const articleUrl = window.location.href;
     const summaryArea = sidebar.querySelector("#summaryArea");
 
     // 로딩 상태 표시
-    if (readTimeValue) readTimeValue.textContent = "계산 중...";
     if (summaryArea) summaryArea.textContent = "요약 생성 중...";
 
     try {
@@ -161,6 +184,7 @@
           messages[Math.floor(Math.random() * messages.length)];
         readRecommend.textContent = randomMessage;
       }
+      const summary = await fetchSummary(articleUrl);
 
       // 요약 UI 반영
       if (summaryArea) {
@@ -173,13 +197,12 @@
             .join("");
         }
       }
+      isSummaryLoaded = true;
     } catch (e) {
       console.error("BreezeRead API 오류:", e);
-      if (readTimeValue) readTimeValue.textContent = "오류";
       if (summaryArea) summaryArea.textContent = "요약 중 오류가 발생했습니다.";
     }
   }
-
   // 3. 토글 버튼 생성 (사이드바 외부, 컨테이너 내부에 위치)
   const toggleBtn = document.createElement("div");
   toggleBtn.id = TOGGLE_ID;
@@ -205,6 +228,10 @@
   const toggleSidebar = () => {
     const isCollapsed = container.classList.toggle("collapsed");
     toggleIcon.src = isCollapsed ? CHEVRON_RIGHT : CHEVRON_LEFT;
+
+    if (!isCollapsed){
+      runBreezeRead();
+    }
   };
   toggleBtn.onclick = toggleSidebar;
 
@@ -482,6 +509,6 @@
   // =========================================================================
   // ⭐️ 실행 시작
   // =========================================================================
-  runBreezeRead();
+  loadReadTimeOnEnter();
   setupBookmarkSystem();
 })();
