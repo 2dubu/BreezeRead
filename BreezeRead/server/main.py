@@ -48,6 +48,16 @@ class RecommendResponse(BaseModel):
     keyword_groups: List[KeywordGroup]
     results: List[NewsResponse]
 
+# 클라이언트가 보낼 JSON 본문의 구조 (URL만 포함)
+class UrlRecommendRequest(BaseModel):
+    url: str
+
+# 클라이언트가 보낼 JSON 본문의 구조를 정의합니다.
+class RecommendRequest(BaseModel):
+    url: str
+    gender: str # 'm' 또는 'f'
+    age: str
+
 # 1) read_time
 @app.post("/readtime/url")
 def read_time_from_url(req: UrlRequest):
@@ -87,8 +97,10 @@ def summarize_from_url(req: UrlSummarizeRequest):
     }
 
 # --------------------------------------------
-@app.get("/recommend/url", response_model=RecommendResponse)
-def recommend(url: str = Query(..., description="추천 기반 원문 뉴스 URL")):
+@app.post("/recommend/url", response_model=RecommendResponse)
+def recommend(
+    request: UrlRecommendRequest  # JSON 본문을 받도록 수정
+):
     """
     URL을 입력하면 추천 뉴스 3개를 반환한다.
 
@@ -98,7 +110,7 @@ def recommend(url: str = Query(..., description="추천 기반 원문 뉴스 URL
     Returns:
         results: NewsResponse 객체 리스트 + 키워드 객체 
     """
-    news_objs = recommend_news_from_url(url)
+    news_objs = recommend_news_from_url(request.url)
     return RecommendResponse(
         keyword_groups=news_objs["keyword_groups"],
         results=[NewsResponse(
@@ -110,18 +122,18 @@ def recommend(url: str = Query(..., description="추천 기반 원문 뉴스 URL
 
 # --------------------------------------------
 # 성별이랑 연령 input하면 선호도 반영해서 기사 추천하기 
-@app.get("/recommend/age-gender", response_model=RecommendResponse)
+@app.post("/recommend/age-gender", response_model=RecommendResponse)
 def recommend_age_gender(
-    url: str = Query(..., description="추천 기반 뉴스 원문 URL"),
-    gender: str = Query(..., description="'m' 또는 'f'"),
-    ages: str = Query(..., description="콤마로 구분된 나이대 코드, 예: '3,4'")
+    request: RecommendRequest # 클라이언트의 본문을 받도록 수정
 ):
     """
     URL + 성별 + 나이대 입력 → 키워드 그룹 분석 → 데이터랩 검색량 비교 →
     groupName + 첫 키워드로 뉴스 검색 → 상위 3개 NewsArticle 반환
     """
-    ages_list = ages.split(",")  # '3,4' → ['3','4']
-    news_objs = recommend_news_with_age_gender(url, gender, ages_list)
+    
+    # request 객체에서 데이터를 추출하여 사용합니다.
+    ages_list = request.age.split(",")  # '3,4' → ['3','4']
+    news_objs = recommend_news_with_age_gender(request.url, request.gender, ages_list)
     
     return RecommendResponse(
         keyword_groups=news_objs["keyword_groups"],

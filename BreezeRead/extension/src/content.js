@@ -472,8 +472,107 @@ document.getElementById("applyFilterBtn").addEventListener("click", () => {
     });
 });
 
+// 1. filter 없는 함수 (기본 요약)
+async function fetchSummary2(articleUrl) {
+    const res = await fetch(`${API_BASE}/recommend/age-gender`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: articleUrl }), 
+    });
 
+    if (!res.ok) {
+        const err = await res.text().catch(() => "");
+        throw new Error(`fetchSummary2 실패: ${res.status} ${err}`);
+    }
 
+    return await res.json();
+}
+
+// 2. filter 있는 fetchSummary 함수 (맞춤형 요약)
+async function fetchSummary1(articleUrl, gender, ages) {
+    const res = await fetch(`${API_BASE}/recommend/age-gender`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: articleUrl, gender: gender, age: ages }), 
+    });
+
+    if (!res.ok) {
+        const err = await res.text().catch(() => "");
+        throw new Error(`fetchSummary1 실패: ${res.status} ${err}`);
+    }
+
+    return await res.json();
+}
+
+// 3. Promise 기반의 로컬스토리지 읽기 함수
+function getUserFilter() {
+    return new Promise((resolve) => {
+        chrome.storage.local.get(["userFilter"], (result) => {
+            resolve(result.userFilter || null); 
+        });
+    });
+}
+
+/**
+ * 사용자 필터 여부에 따라 적절한 API를 호출하고 요약 데이터를 반환합니다.
+ * @param {string} currentArticleUrl 현재 요약할 기사의 URL
+ * @returns {Promise<Object>} API로부터 받은 요약 데이터
+ */
+async function getFilter(currentArticleUrl) {
+    console.log("필터 및 요약 시스템 시작");
+    
+    try {
+        const userFilter = await getUserFilter();
+        let recommendData;
+
+        if (userFilter) {
+            console.log("✅ userFilter 존재:", userFilter);
+            
+            const gender = userFilter.gender;
+            const ages = userFilter.age; 
+            
+            console.log(`API에 전송: Gender: ${gender}, Age: ${ages}`);
+            
+            // fetchSummary1 호출 및 데이터 수신 (필터 O)
+            recommendData = await fetchSummary1(currentArticleUrl, gender, ages); 
+            console.log("🎉 맞춤형 요약 정보 로드 성공");
+        } else {
+            console.log("❌ userFilter 없음.");
+            
+            // fetchSummary2 호출 및 데이터 수신 (필터 X)
+            recommendData = await fetchSummary2(currentArticleUrl); 
+            console.log("🎉 기본 요약 정보 로드 성공");
+        }
+        
+        // 최종적으로 API 결과를 반환합니다.
+        return recommendData;
+        
+    } catch (error) {
+        console.error("⛔ 시스템 실행 중 오류 발생:", error.message);
+        throw error; // 에러를 상위 호출자로 다시 던져서 처리할 수 있도록 합니다.
+    }
+}
+
+// 4. 실행부 (getFilter 함수를 호출하는 부분)
+
+async function recommend() {
+    // ⚠️ articleUrl을 현재 실행 환경에 맞게 가져와야 합니다.
+    // 예: Content Script라면
+    const articleUrl = window.location.href;
+    // 예: Background/Popup Script라면 chrome.tabs.query를 사용해야 합니다.
+
+    try {
+        const finalSummaryData = await getFilter(articleUrl);
+        console.log("최종 요약 데이터:", finalSummaryData);
+
+        // TODO: finalSummaryData를 사용하여 사용자에게 결과를 보여주는 로직을 구현합니다.
+
+    } catch (error) {
+        console.error("요약 프로세스 최종 실패:", error.message);
+    }
+}
+
+  recommend(); // 이 함수를 호출해야 실행됩니다.
   runBreezeRead();
   setupBookmarkSystem();
 })();
