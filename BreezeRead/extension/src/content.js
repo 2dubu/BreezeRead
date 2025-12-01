@@ -473,7 +473,7 @@ document.getElementById("applyFilterBtn").addEventListener("click", () => {
 });
 
 // 1. filter 없는 함수 (기본 요약)
-async function fetchSummary2(articleUrl) {
+async function fetchSummary1(articleUrl) {
     const res = await fetch(`${API_BASE}/recommend/age-gender`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -489,7 +489,7 @@ async function fetchSummary2(articleUrl) {
 }
 
 // 2. filter 있는 fetchSummary 함수 (맞춤형 요약)
-async function fetchSummary1(articleUrl, gender, ages) {
+async function fetchSummary2(articleUrl, gender, ages) {
     const res = await fetch(`${API_BASE}/recommend/age-gender`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -534,13 +534,13 @@ async function getFilter(currentArticleUrl) {
             console.log(`API에 전송: Gender: ${gender}, Age: ${ages}`);
             
             // fetchSummary1 호출 및 데이터 수신 (필터 O)
-            recommendData = await fetchSummary1(currentArticleUrl, gender, ages); 
+            recommendData = await fetchSummary2(currentArticleUrl, gender, ages); 
             console.log("🎉 맞춤형 요약 정보 로드 성공");
         } else {
             console.log("❌ userFilter 없음.");
             
             // fetchSummary2 호출 및 데이터 수신 (필터 X)
-            recommendData = await fetchSummary2(currentArticleUrl); 
+            recommendData = await fetchSummary1(currentArticleUrl); 
             console.log("🎉 기본 요약 정보 로드 성공");
         }
         
