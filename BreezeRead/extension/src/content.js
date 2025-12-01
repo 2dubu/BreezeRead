@@ -728,7 +728,7 @@ async function initRecommendation() {
     }
 }
 
-  // initRecommendation();
+  initRecommendation();
   recommend(); // 이 함수를 호출해야 실행됩니다.
   loadReadTimeAtInitialized();
   setupBookmarkSystem();
