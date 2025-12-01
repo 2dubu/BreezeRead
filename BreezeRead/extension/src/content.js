@@ -473,8 +473,8 @@ document.getElementById("applyFilterBtn").addEventListener("click", () => {
 });
 
 // 1. filter 없는 함수 (기본 요약)
-async function fetchSummary1(articleUrl) {
-    const res = await fetch(`${API_BASE}/recommend/age-gender`, {
+async function fetchDefaultRecommend(articleUrl) {
+    const res = await fetch(`${API_BASE}/recommend/url`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: articleUrl }), 
@@ -482,14 +482,14 @@ async function fetchSummary1(articleUrl) {
 
     if (!res.ok) {
         const err = await res.text().catch(() => "");
-        throw new Error(`fetchSummary2 실패: ${res.status} ${err}`);
+        throw new Error(`fetchDefaultRecommend 실패: ${res.status} ${err}`);
     }
 
     return await res.json();
 }
 
 // 2. filter 있는 fetchSummary 함수 (맞춤형 요약)
-async function fetchSummary2(articleUrl, gender, ages) {
+async function fetchRecommendWithUserData(articleUrl, gender, ages) {
     const res = await fetch(`${API_BASE}/recommend/age-gender`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -498,7 +498,7 @@ async function fetchSummary2(articleUrl, gender, ages) {
 
     if (!res.ok) {
         const err = await res.text().catch(() => "");
-        throw new Error(`fetchSummary1 실패: ${res.status} ${err}`);
+        throw new Error(`fetchRecommendWithUserData 실패: ${res.status} ${err}`);
     }
 
     return await res.json();
@@ -533,14 +533,14 @@ async function getFilter(currentArticleUrl) {
             
             console.log(`API에 전송: Gender: ${gender}, Age: ${ages}`);
             
-            // fetchSummary1 호출 및 데이터 수신 (필터 O)
-            recommendData = await fetchSummary2(currentArticleUrl, gender, ages); 
+            // fetchRecommendWithUserData 호출 및 데이터 수신 (필터 O)
+            recommendData = await fetchRecommendWithUserData(currentArticleUrl, gender, ages); 
             console.log("🎉 맞춤형 요약 정보 로드 성공");
         } else {
             console.log("❌ userFilter 없음.");
             
-            // fetchSummary2 호출 및 데이터 수신 (필터 X)
-            recommendData = await fetchSummary1(currentArticleUrl); 
+            // fetchDefaultRecommend 호출 및 데이터 수신 (필터 X)
+            recommendData = await fetchDefaultRecommend(currentArticleUrl); 
             console.log("🎉 기본 요약 정보 로드 성공");
         }
         
@@ -562,10 +562,10 @@ async function recommend() {
     // 예: Background/Popup Script라면 chrome.tabs.query를 사용해야 합니다.
 
     try {
-        const finalSummaryData = await getFilter(articleUrl);
-        console.log("최종 요약 데이터:", finalSummaryData);
+        const finalRecommendData = await getFilter(articleUrl);
+        console.log("최종 요약 데이터:", finalRecommendData);
 
-        // TODO: finalSummaryData를 사용하여 사용자에게 결과를 보여주는 로직을 구현합니다.
+        // TODO: finalRecommendData 사용하여 사용자에게 결과를 보여주는 로직을 구현합니다.
 
     } catch (error) {
         console.error("요약 프로세스 최종 실패:", error.message);
