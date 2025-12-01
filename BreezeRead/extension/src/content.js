@@ -674,7 +674,7 @@ function renderRecommendation(recommendData) {
     keywordArea.innerHTML = "";
 
     // 🔹 키워드 직접 추가
-    const kw1 = recommendData.keyword_groups[0].groupName[0];
+    const kw1 = recommendData.keyword_groups[0].groupName;
     const kw2 = recommendData.keyword_groups[0].keywords[0];
     const kw3 = recommendData.keyword_groups[0].keywords[1];
 
