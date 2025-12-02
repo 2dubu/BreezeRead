@@ -664,7 +664,7 @@ async function recommend() {
     try {
         const finalRecommendData = await getFilter(articleUrl);
         console.log("최종 요약 데이터:", finalRecommendData);
-        
+        renderRecommendation(finalRecommendData);
         // TODO: finalRecommendData 사용하여 사용자에게 결과를 보여주는 로직을 구현합니다.
 
     } catch (error) {
@@ -724,20 +724,8 @@ function renderRecommendation(recommendData) {
     }
 }
 
-// 🔹 예시: API에서 받아온 데이터 렌더링
-async function initRecommendation() {
-    const currentArticleUrl = window.location.href;
 
-    try {
-        const recommendData = await getFilter(currentArticleUrl);
-        renderRecommendation(recommendData);
-    } catch (err) {
-        console.error("추천 데이터 로드 실패:", err);
-    }
-}
-
-  initRecommendation();
-  recommend(); // 이 함수를 호출해야 실행됩니다.
+  recommend(); 
   loadReadTimeAtInitialized();
   setupBookmarkSystem();
 })();
