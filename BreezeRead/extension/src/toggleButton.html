@@ -23,13 +23,11 @@
 
     <script>
       document.getElementById("toggleSidebar").addEventListener("click", () => {
-        // 현재 활성화된 탭에 메시지를 보냅니다.
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
           if (tabs.length > 0) {
             chrome.tabs.sendMessage(tabs[0].id, { action: "toggleSidebar" });
           }
         });
-        // 팝업 창을 닫습니다. (옵션)
         window.close();
       });
     </script>
