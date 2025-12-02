@@ -219,7 +219,7 @@
   // 읽기 시간 배지 생성 (토글 버튼 오른쪽에 표시)
   const readTimeBadge = document.createElement("div");
   readTimeBadge.id = "breezeread-time-badge";
-  readTimeBadge.textContent = "로딩 중...";
+  readTimeBadge.textContent = "계산 중...";
 
   // 초기 상태: 숨김 (collapsed)
   container.classList.add("collapsed");
