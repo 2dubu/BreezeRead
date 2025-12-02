@@ -546,15 +546,23 @@ document.getElementById("applyFilterBtn").addEventListener("click", () => {
     
     // 🔹 선택된 성별 가져오기
     const genderInput = document.querySelector("input[name='gender']:checked");
-    const gender = genderInput ? genderInput.value : "";
 
-    // 🔹 선택된 연령대 가져오기
-    const age = document.getElementById("ageGroup").value;
+  // 프론트 값 → 서버 값 매핑
+  const genderMap = {
+      male: "m",
+      female: "f"
+  };
 
-    // 🔹 저장할 데이터 형태
+  // 성별 변환 ('male' | 'female' → 'm' | 'f')
+  const gender = genderInput ? genderMap[genderInput.value] : "";
+
+  // 🔹 선택된 연령대 가져오기
+  const age = document.getElementById("ageGroup").value;
+
+    // 🔹 서버에 맞는 데이터 형태
     const userFilter = {
-        gender: gender,
-        agesList: age ? [age] : [] 
+        gender: gender,            // 'm' / 'f' / ''
+        agesList: age ? [age] : [] // ["3"] or []
     };
 
     // 🔹 storage에 저장
