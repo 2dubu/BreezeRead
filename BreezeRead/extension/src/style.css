@@ -1,5 +1,8 @@
 /* style.css */
 
+/* Load Pretendard Font */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+
 :root {
   --sidebar-width: 240px;
   --sidebar-height: 100vh;
@@ -13,7 +16,8 @@
   --toggle-offset: -30px;
   --header-padding: 15px;
   --header-bg: #f0f0f0;
-  --font-family: "Arial", "Malgun Gothic", sans-serif;
+  --font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+    sans-serif;
   --logo-size: 30px;
   --logo-radius: 6px;
   --logo-gap: 10px;
@@ -434,7 +438,7 @@ hr {
 }
 .section-panel-filterPanel {
   position: absolute;
-  top: 60px; 
+  top: 60px;
   left: 10px;
   width: 170px;
   background-color: #fff;
