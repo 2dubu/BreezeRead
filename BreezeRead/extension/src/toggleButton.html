@@ -1,28 +1,35 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <title>BreezeRead</title>
-  <style>
-    body { width: 150px; font-family: Arial, sans-serif; padding: 10px; }
-    button { width: 100%; padding: 10px; margin-top: 10px; cursor: pointer; }
-  </style>
-</head>
-<body>
-  <h3>BreezeRead</h3>
-  <button id="toggleSidebar">사이드바 토글</button>
+  <head>
+    <meta charset="UTF-8" />
+    <title>BreezeRead</title>
+    <style>
+      body {
+        width: 150px;
+        font-family: Arial, sans-serif;
+        padding: 10px;
+      }
+      button {
+        width: 100%;
+        padding: 10px;
+        margin-top: 10px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h3>BreezeRead</h3>
+    <button id="toggleSidebar">사이드바 토글</button>
 
-  <script>
-    document.getElementById("toggleSidebar").addEventListener("click", () => {
-      // 현재 활성화된 탭에 메시지를 보냅니다.
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs.length > 0) {
-          chrome.tabs.sendMessage(tabs[0].id, { action: "toggleSidebar" });
-        }
+    <script>
+      document.getElementById("toggleSidebar").addEventListener("click", () => {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+          if (tabs.length > 0) {
+            chrome.tabs.sendMessage(tabs[0].id, { action: "toggleSidebar" });
+          }
+        });
+        window.close();
       });
-      // 팝업 창을 닫습니다. (옵션)
-      window.close();
-    });
-  </script>
-</body>
+    </script>
+  </body>
 </html>

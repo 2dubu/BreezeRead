@@ -7,18 +7,20 @@
   const SETTINGS_IMAGE = chrome.runtime.getURL("assets/setting.png");
   const CHEVRON_RIGHT = chrome.runtime.getURL("assets/chevron-right.png");
   const CHEVRON_LEFT = chrome.runtime.getURL("assets/chevron-left.png");
-  // ⭐️ 북마크 시스템 관련 상수
+
+  // 북마크 시스템 관련 상수
   const FLYOUT_PANEL_ID = "breezeread-folder-flyout";
   const INITIAL_BOOKMARK_DATA = [
     { folderId: 1, folderName: "경제", bookmarks: [] },
     { folderId: 2, folderName: "IT/기술", bookmarks: [] },
     { folderId: 3, folderName: "생활/문화", bookmarks: [] },
   ];
-  // ✅ Cloud Run API 베이스 URL
+
+  // Cloud Run API 베이스 URL
   const API_BASE =
     "https://breezeread-api-866228904846.asia-northeast3.run.app";
 
-  // ⭐️ [수정]: 최상위 컨테이너 ID를 기준으로 중복 실행 방지
+  // 최상위 컨테이너 ID를 기준으로 중복 실행 방지
   if (document.getElementById(CONTAINER_ID)) return;
 
   let isReadTimeLoaded = false;
@@ -68,7 +70,7 @@
     console.debug("Could not set extension asset images", e);
   }
 
-  // === ✅ BreezeRead 기능: 읽기 시간 + 요약 호출 ===
+  // === BreezeRead 기능: 읽기 시간 + 요약 호출 ===
 
   // 현재 기사 URL 기준으로 읽기 시간 가져오기
   async function fetchReadTime(articleUrl) {
@@ -240,7 +242,7 @@
   // =========================================================================
   // 📁 북마크 폴더 관리 로직
   // =========================================================================
-  // ⭐️ 2. 데이터 로드 및 초기화
+  // 데이터 로드 및 초기화
 
   /**
    * 로컬 스토리지에서 북마크 폴더 데이터를 로드하거나,
@@ -509,8 +511,224 @@
   }
 
   // =========================================================================
-  // ⭐️ 실행 시작
+  // 📁 성별/ 연령별 정보 입력하기
   // =========================================================================
+  // =========================================================================
+  // ⚙️ 5. 시스템 초기화 및 이벤트 바인딩 (참고 문법)
+  // =========================================================================
+
+  // 설정 패널
+  const settingsBtn = document.getElementById("settingsBtn");
+  const filterPanel = document.querySelector(".section-panel-filterPanel");
+
+  // 닫기 버튼
+  const closePanelBtn = document.getElementById("closePanelBtn");
+
+  // 1) 설정 버튼 클릭 → 토글
+  settingsBtn.addEventListener("click", (e) => {
+    e.stopPropagation(); // 이벤트 버블링 방지
+    filterPanel.classList.toggle("hidden");
+  });
+
+  // 2) 닫기 버튼 클릭 → 패널 숨김
+  closePanelBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    filterPanel.classList.add("hidden");
+  });
+
+  // 3) 패널 외부 클릭시 자동 닫기
+  document.addEventListener("click", (e) => {
+    if (!filterPanel.contains(e.target) && e.target !== settingsBtn) {
+      filterPanel.classList.add("hidden");
+    }
+  });
+
+  // 연령/성별 적용버튼
+  document.getElementById("applyFilterBtn").addEventListener("click", () => {
+    // 🔹 선택된 성별 가져오기
+    const genderInput = document.querySelector("input[name='gender']:checked");
+
+    // 프론트 값 → 서버 값 매핑
+    const genderMap = {
+      male: "m",
+      female: "f",
+    };
+
+    // 성별 변환 ('male' | 'female' → 'm' | 'f')
+    const gender = genderInput ? genderMap[genderInput.value] : "";
+
+    // 🔹 선택된 연령대 가져오기
+    const age = document.getElementById("ageGroup").value;
+
+    // 🔹 서버에 맞는 데이터 형태
+    const userFilter = {
+      gender: gender, // 'm' / 'f' / ''
+      agesList: age ? [age] : [], // ["3"] or []
+    };
+
+    // 🔹 storage에 저장
+    chrome.storage.local.set({ userFilter }, () => {
+      console.log("사용자 필터 저장 완료:", userFilter);
+      alert("필터가 저장되었습니다!");
+    });
+  });
+
+  // 1. filter 없는 함수 (기본 요약)
+  async function fetchDefaultRecommend(articleUrl) {
+    const res = await fetch(`${API_BASE}/recommend/url`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: articleUrl }),
+    });
+
+    if (!res.ok) {
+      const err = await res.text().catch(() => "");
+      throw new Error(`fetchDefaultRecommend 실패: ${res.status} ${err}`);
+    }
+
+    return await res.json();
+  }
+
+  // 2. filter 있는 fetchSummary 함수 (맞춤형 요약)
+  async function fetchRecommendWithUserData(articleUrl, gender, agesList) {
+    const res = await fetch(`${API_BASE}/recommend/age-gender`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        url: articleUrl,
+        gender: gender,
+        agesList: agesList,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.text().catch(() => "");
+      throw new Error(`fetchRecommendWithUserData 실패: ${res.status} ${err}`);
+    }
+
+    return await res.json();
+  }
+
+  // 3. Promise 기반의 로컬스토리지 읽기 함수
+  function getUserFilter() {
+    return new Promise((resolve) => {
+      chrome.storage.local.get(["userFilter"], (result) => {
+        resolve(result.userFilter || null);
+      });
+    });
+  }
+
+  /**
+   * 사용자 필터 여부에 따라 적절한 API를 호출하고 요약 데이터를 반환합니다.
+   * @param {string} currentArticleUrl 현재 요약할 기사의 URL
+   * @returns {Promise<Object>} API로부터 받은 요약 데이터
+   */
+  async function getFilter(currentArticleUrl) {
+    console.log("필터 및 요약 시스템 시작");
+    const userFilter = await getUserFilter();
+
+    try {
+      let recommendData;
+
+      if (userFilter != null) {
+        console.log("✅ userFilter 존재:", userFilter);
+
+        const gender = userFilter.gender;
+        const agesList = userFilter.agesList;
+
+        console.log(`API에 전송: Gender: ${gender}, Age: ${agesList[0]}`);
+
+        // fetchRecommendWithUserData 호출 및 데이터 수신 (필터 O)
+        recommendData = await fetchRecommendWithUserData(
+          currentArticleUrl,
+          gender,
+          agesList
+        );
+        console.log("🎉 맞춤형 요약 정보 로드 성공");
+      } else {
+        console.log("❌ userFilter 없음.");
+
+        // fetchDefaultRecommend 호출 및 데이터 수신 (필터 X)
+        recommendData = await fetchDefaultRecommend(currentArticleUrl);
+        console.log("🎉 기본 요약 정보 로드 성공");
+      }
+
+      // 최종적으로 API 결과를 반환합니다.
+      return recommendData;
+    } catch (error) {
+      console.error("⛔ 시스템 실행 중 오류 발생:", error.message);
+      throw error; // 에러를 상위 호출자로 다시 던져서 처리할 수 있도록 합니다.
+    }
+  }
+
+  // 4. 실행부 (getFilter 함수를 호출하는 부분)
+
+  async function recommend() {
+    // ⚠️ articleUrl을 현재 실행 환경에 맞게 가져와야 합니다.
+    // 예: Content Script라면
+    const articleUrl = window.location.href;
+    // 예: Background/Popup Script라면 chrome.tabs.query를 사용해야 합니다.
+
+    try {
+      const finalRecommendData = await getFilter(articleUrl);
+      console.log("최종 요약 데이터:", finalRecommendData);
+      renderRecommendation(finalRecommendData);
+      // TODO: finalRecommendData 사용하여 사용자에게 결과를 보여주는 로직을 구현합니다.
+    } catch (error) {
+      console.error("요약 프로세스 최종 실패:", error.message);
+    }
+  }
+
+  /**
+   * 추천 데이터 렌더링 함수 (선택 키워드 + 뉴스 반복)
+   * @param {Object} recommendData API에서 받아온 추천 데이터
+   */
+  function renderRecommendation(recommendData) {
+    // 🔹 키워드 영역 초기화
+    const keywordArea = document.getElementById("keywordArea");
+    keywordArea.innerHTML = "";
+
+    // 🔹 키워드 직접 추가
+    const kw1 = recommendData.keyword_groups[0].groupName;
+    const kw2 = recommendData.keyword_groups[0].keywords[0];
+    const kw3 = recommendData.keyword_groups[0].keywords[1];
+
+    [kw1, kw2, kw3].forEach((kw) => {
+      const span = document.createElement("span");
+      span.className = "keyword-tag";
+      span.textContent = kw ? `#${kw}` : "";
+      keywordArea.appendChild(span);
+    });
+
+    // 🔹 뉴스 추천 영역 초기화
+    const recommendationArea = document.getElementById("recommendationArea");
+    recommendationArea.innerHTML = "";
+
+    if (recommendData.results && recommendData.results.length > 0) {
+      recommendData.results.forEach((news) => {
+        const newsDiv = document.createElement("div");
+        newsDiv.className = "news-item";
+
+        const img = document.createElement("img");
+        img.src = news.thumbnail || "";
+        img.alt = "뉴스 썸네일";
+
+        const p = document.createElement("p");
+        p.textContent = news.title;
+
+        // 클릭 시 새 탭으로 링크 열기
+        newsDiv.addEventListener("click", () => {
+          window.open(news.link, "_blank");
+        });
+
+        newsDiv.appendChild(img);
+        newsDiv.appendChild(p);
+        recommendationArea.appendChild(newsDiv);
+      });
+    }
+  }
+
+  recommend();
   loadReadTimeAtInitialized();
   setupBookmarkSystem();
 })();
