@@ -11,6 +11,9 @@ from bs4 import BeautifulSoup
 from sklearn.feature_extraction.text import TfidfVectorizer
 from konlpy.tag import Okt
 import networkx as nx
+
+OKT_TAGGER = Okt()
+
 '''
 recommend.py 기능 핵심요약 
 
@@ -103,8 +106,7 @@ def extract_keywords_tfidf(text: str, top_n: int = 6):
     Returns:
         [(키워드, 점수), ...] 형태 리스트
     """
-    okt = Okt()
-    tokens = [t for t in okt.nouns(text) if len(t) > 1]
+    tokens = [t for t in OKT_TAGGER.nouns(text) if len(t) > 1]
     tfidf_vectorizer = TfidfVectorizer()
     tfidf_matrix = tfidf_vectorizer.fit_transform([" ".join(tokens)])
     feature_names = tfidf_vectorizer.get_feature_names_out()
@@ -126,8 +128,7 @@ def extract_keywords_textrank(text: str, top_n: int = 6, window_size: int = 4, d
     Returns:
         [(키워드, 점수), ...] 형태 리스트
     """
-    okt = Okt()
-    words = [w for w in okt.nouns(text) if len(w) > 1]
+    words = [w for w in OKT_TAGGER.nouns(text) if len(w) > 1]
     graph = nx.Graph()
     for i, word in enumerate(words):
         for j in range(i+1, min(i+window_size, len(words))):
