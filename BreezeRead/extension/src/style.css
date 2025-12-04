@@ -231,15 +231,23 @@ hr {
 }
 
 /* 3. 핵심 키워드 */
+#keywordArea {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 5px;
+}
+
 .keyword-tag {
+  flex-shrink: 0;
   display: inline-block;
   background-color: var(--keyword-bg);
   color: var(--keyword-color);
   border-radius: 12px;
   padding: 4px 10px;
-  margin-right: 5px;
   font-size: 0.8em;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 /* 4. 관련 뉴스 추천 */
