@@ -26,12 +26,12 @@
   --muted-margin: 8px;
   --panel-spacing: 20px;
   --section-title-color: #888;
-  --keyword-bg: #e6f7ff;
-  --keyword-color: #1890ff;
+  --keyword-bg: #e5f3ff;
+  --keyword-color: #4b8eff;
   --bookmark-gap: 10px;
   --bookmark-control-size: 30px;
   --bookmark-radius: 50%;
-  --accent-color: #1890ff;
+  --accent-color: #406cdc;
   --black: #111111;
 }
 
@@ -231,15 +231,23 @@ hr {
 }
 
 /* 3. 핵심 키워드 */
+#keywordArea {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 5px;
+}
+
 .keyword-tag {
+  flex-shrink: 0;
   display: inline-block;
   background-color: var(--keyword-bg);
   color: var(--keyword-color);
   border-radius: 12px;
   padding: 4px 10px;
-  margin-right: 5px;
   font-size: 0.8em;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 /* 4. 관련 뉴스 추천 */
@@ -251,18 +259,19 @@ hr {
 }
 .news-item {
   flex-shrink: 0;
-  width: 100px;
+  width: 135px;
   text-align: center;
 }
 .news-item img {
   width: 100%;
-  height: 70px;
+  height: 90px;
   object-fit: cover;
   border-radius: 4px;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 .news-item p {
-  font-size: 0.75em;
+  font-size: 0.8em;
   line-height: 1.3;
   margin: 0;
   /* 2줄로 제한 */

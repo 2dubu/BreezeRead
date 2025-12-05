@@ -219,7 +219,7 @@
   // 읽기 시간 배지 생성 (토글 버튼 오른쪽에 표시)
   const readTimeBadge = document.createElement("div");
   readTimeBadge.id = "breezeread-time-badge";
-  readTimeBadge.textContent = "...";
+  readTimeBadge.textContent = "계산 중...";
 
   // 초기 상태: 숨김 (collapsed)
   container.classList.add("collapsed");
@@ -487,7 +487,7 @@
     // 5. saveBtn 이벤트 리스너 (Flyout 토글)
     const saveBtn = sidebar.querySelector(".saveBtn");
     if (saveBtn) {
-      saveBtn.textContent = "폴더에 저장하기 ▼";
+      saveBtn.textContent = "저장";
       saveBtn.onclick = null;
       saveBtn.addEventListener("click", () => {
         if (flyoutPanel) {
@@ -501,7 +501,7 @@
     // 7. loadBtn 이벤트 리스너 (폴더 목록 갱신)
     const loadBtn = sidebar.querySelector(".loadBtn");
     if (loadBtn) {
-      loadBtn.textContent = "폴더 목록 갱신";
+      loadBtn.textContent = "갱신";
       loadBtn.onclick = null;
       loadBtn.addEventListener("click", async () => {
         await setupBookmarkSystem();
