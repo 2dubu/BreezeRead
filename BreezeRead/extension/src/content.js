@@ -357,7 +357,7 @@
             <span class="bookmark-title">🔗 ${displayTitle}</span>
             <span class="bookmark-date">${date}</span>
           </a>
-          <button class="bookmark-delete-btn" data-bookmark-id="${b.id}"title="삭제">
+          <button class="bookmark-delete-btn" data-bookmark-id="${b.id}" title="삭제">
           ×
           </button>
           </li>
