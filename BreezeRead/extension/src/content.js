@@ -368,7 +368,7 @@
     targetContainer.innerHTML += `<ul class="folder-bookmarks-list">${bookmarkListHtml}</ul>`;
   }
 /**
- * 삭제버튼을 누르면 해당 기사 북마크가 지워짐 
+ * 삭제버튼을 누르면 해당 기사 북마크가 지워짐
  */
 
 document.addEventListener("click", (e) => {
