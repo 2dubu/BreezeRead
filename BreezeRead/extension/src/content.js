@@ -395,7 +395,12 @@ function deleteBookmark(id) {
       };
     });
 
-    chrome.storage.local.set({ breezeReadFolders: folders });
+    chrome.storage.local.set({ breezeReadFolders: folders }, () => {
+      if (chrome.runtime.lastError) {
+        console.error('Failed to delete bookmark:', chrome.runtime.lastError);
+        // Optionally notify user of failure
+      }
+    });
   });
 }
 
