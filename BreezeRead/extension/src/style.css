@@ -461,3 +461,41 @@ hr {
 .section-panel-filterPanel.hidden {
   display: none;
 }
+
+.folder-bookmark-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bookmark-delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #888;
+  padding: 0 6px;
+}
+
+.bookmark-delete-btn:hover {
+  color: #e00;
+}
+.folder-bookmark-item a {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.bookmark-title {
+  display: inline-block;
+  max-width: 70%;   /* 필요하면 조정 가능 */
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.bookmark-date {
+  margin-left: 8px;
+  white-space: nowrap;
+}

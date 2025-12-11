@@ -357,13 +357,61 @@
             <span class="bookmark-title">🔗 ${displayTitle}</span>
             <span class="bookmark-date">${date}</span>
           </a>
-        </li>
+          <button class="bookmark-delete-btn" data-bookmark-id="${b.id}" title="삭제">
+          ×
+          </button>
+          </li>
       `;
       })
       .join("");
 
     targetContainer.innerHTML += `<ul class="folder-bookmarks-list">${bookmarkListHtml}</ul>`;
   }
+/**
+ * 삭제버튼을 누르면 해당 기사 북마크가 지워짐
+ */
+
+document.addEventListener("click", (e) => {
+  if (e.target.classList.contains("bookmark-delete-btn")) {
+    const id = e.target.dataset.bookmarkId;
+
+    // UI 제거는 스토리지 저장 성공 후 실행하도록 deleteBookmark에서 처리
+    deleteBookmark(id);
+  }
+});
+
+// 스토리지 삭제 + 성공 시 UI 갱신까지 담당
+function deleteBookmark(id) {
+  chrome.storage.local.get(["breezeReadFolders"], (result) => {
+    let folders = result.breezeReadFolders;
+
+    if (!folders || folders.length === 0) return;
+
+    folders = folders.map(folder => ({
+      ...folder,
+      bookmarks: folder.bookmarks.filter(b => b.id !== id)
+    }));
+
+    chrome.storage.local.set({ breezeReadFolders: folders }, () => {
+      if (chrome.runtime.lastError) {
+        console.error("❌ Failed to delete bookmark:", chrome.runtime.lastError);
+        alert("북마크 삭제 중 문제가 발생했습니다. 다시 시도해주세요.");
+        return;
+      }
+
+      // ✔ 스토리지 삭제 성공 → UI 삭제
+      removeBookmarkItem(id);
+    });
+  });
+}
+
+function removeBookmarkItem(id) {
+  const item = document.querySelector(`button[data-bookmark-id="${id}"]`)
+                ?.closest(".folder-bookmark-item");
+  if (item) item.remove();
+}
+
+
 
   /**
    * 폴더 선택 플라이아웃 패널 UI를 생성하고 저장 이벤트를 바인딩합니다.
