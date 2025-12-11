@@ -57,8 +57,8 @@ python 실행파일.py
 load_dotenv()
 
 # 환경변수 불러오기
-CLIENT_ID = os.environ.get("client_id")
-CLIENT_SECRET = os.environ.get("client_secret")
+CLIENT_ID = os.environ.get("CLIENT_ID")
+CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
 NAVER_CLIENT_ID = os.environ.get("NAVER_CLIENT_ID")
 NAVER_CLIENT_SECRET = os.environ.get("NAVER_CLIENT_SECRET")
 
@@ -161,6 +161,47 @@ def create_keyword_groups(tfidf_keywords, textrank_keywords):
     textrank_keywords_list = [w for w, s in textrank_keywords[1:]]
     keyword_groups.append({'groupName': textrank_groupName, 'keywords': textrank_keywords_list})
     return keyword_groups
+
+def merge_keywords(tfidf_keywords, textrank_keywords, top_n=20):
+    """
+    TF-IDF와 TextRank 키워드를 상위 N개씩 가져와
+    중복 제거 후 하나의 키워드 리스트로 병합한다.
+
+    Returns:
+        ["키워드1", "키워드2", ...]
+    """
+
+    # TF-IDF 상위 top_n
+    tfidf_list = [w for w, s in tfidf_keywords[:top_n]]
+
+    # TextRank 상위 top_n
+    textrank_list = [w for w, s in textrank_keywords[:top_n]]
+
+    # 합치고 중복 제거
+    merged = list(set(tfidf_list + textrank_list))
+
+    return merged
+
+def make_keyword_groups_for_datalab(keyword_list):
+    """
+    keyword_list에서 최대 5개의 키워드를 사용해
+    groupName = 키워드
+    keywords = [키워드]
+    형식으로 변환하는 함수
+    """
+    groups = []
+
+    # 최대 5개만 사용
+    limited_keywords = keyword_list[:5]
+
+    for kw in limited_keywords:
+        groups.append({
+            "groupName": kw,
+            "keywords": [kw]
+        })
+
+    return groups
+
     
 # =========================
 # 연령대별, 나이대별 선호도 조사 
@@ -367,10 +408,11 @@ def recommend_news_with_age_gender(url, g, ages):
     # 2️⃣ 키워드 추출
     tfidf_keywords = extract_keywords_tfidf(text)
     textrank_keywords = extract_keywords_textrank(text)
-    keyword_groups = create_keyword_groups(tfidf_keywords, textrank_keywords)
+    keywords = merge_keywords(tfidf_keywords, textrank_keywords)
+    keywordGroups = make_keyword_groups_for_datalab(keywords)
 
     # 3️⃣ 데이터랩에서 검색량 기준 가장 인기 group 선택
-    top_group_data = get_preference_result(keyword_groups, g, ages)
+    top_group_data = get_preference_result(keywordGroups, g, ages)
     if not top_group_data:
         return {"keyword_groups": [], "news": []}
 
